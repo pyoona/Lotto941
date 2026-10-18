@@ -464,12 +464,6 @@
             let url = API_URL + '?fn=' + encodeURIComponent(name) +
                       '&args=' + encodeURIComponent(JSON.stringify(args));
 
-            if (name === 'runUpdateAll') {
-              const key = prompt('ใส่รหัสผ่านสำหรับอัปเดตข้อมูล');
-              if (key === null) { fail(new Error('ยกเลิก')); return; }
-              url += '&key=' + encodeURIComponent(key);
-            }
-
             fetch(url)
               .then(r => r.json())
               .then(j => { if (j.error) throw new Error(j.error); ok(j.result); })
