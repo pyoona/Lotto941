@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #a8e6cf; 
+      --secondary-color: #dcedc1; 
+      --hover-color: #88d4b4;
+      --text-dark: #2d4d3a;
+      --bg-color: #f7fcf9;
+      --red-color: #e74c3c;
+      --blue-color: #3498db;
+      --orange-accent: #F4B183;
+      --update-btn-color: #e67e22;
+      --update-btn-hover: #d35400;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      margin: 0; padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      background-color: var(--primary-color);
+      color: var(--text-dark);
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .mobile-header .brand { 
+      font-size: 1.1em; 
+      font-weight: 600; 
+      flex-shrink: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .menu-toggle {
+      background: none; border: none;
+      font-size: 1.4em; color: var(--text-dark);
+      cursor: pointer; padding: 5px;
+    }
+
+    .sidebar {
+      width: 240px; height: 100vh;
+      background-color: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+      overflow-y: auto; position: fixed;
+      left: 0; top: 0; z-index: 900;
+      transition: transform 0.3s ease;
+    }
+
+    .header {
+      background-color: var(--primary-color);
+      padding: 15px; text-align: center;
+      font-size: 1.3em; font-weight: 600;
+      color: var(--text-dark);
+      position: sticky; top: 0; z-index: 10;
+    }
+
+    .menu-item {
+      padding: 12px 15px; cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      font-weight: 600; font-size: 0.95em;
+      display: flex; justify-content: space-between; align-items: center;
+      user-select: none;
+      color: blue; /* เปลี่ยนสีเมนูหลักเป็นสีน้ำเงิน */
+    }
+
+    .menu-item:hover { background-color: var(--secondary-color); }
+
+    .sub-menu { display: none; background-color: #fafafa; }
+
+    .sub-menu-item {
+      padding: 10px 15px 10px 30px; cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.88em; user-select: none;
+      color: black; /* เปลี่ยนสีเมนูย่อยเป็นสีดำ */
+    }
+
+    .sub-menu-item:hover, .sub-menu-item.active {
+      background-color: var(--hover-color); color: #fff;
+    }
+
+    .content {
+      margin-left: 240px; padding: 20px;
+      flex-grow: 1; width: calc(100% - 240px);
+    }
+
+    .content-header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 450px;
+      width: 100%;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    h2 {
+      color: var(--text-dark); margin: 0;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 5px; font-size: 1.2em;
+    }
+
+    .btn-refresh, .btn-update {
+      background-color: #ffffff;
+      color: var(--text-dark);
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 0.85em;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .btn-update {
+      background-color: var(--update-btn-color);
+      color: #ffffff;
+      border-color: var(--update-btn-hover);
+    }
+
+    .btn-update:hover {
+      background-color: var(--update-btn-hover);
+    }
+
+    .btn-refresh:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .btn-refresh:active, .btn-update:active {
+      transform: scale(0.95);
+    }
+
+    .btn-refresh.loading, .btn-update.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .spin-icon {
+      display: inline-block;
+      transition: transform 0.5s ease;
+    }
+
+    .btn-refresh.loading .spin-icon, .btn-update.loading .spin-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .date-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 15px;
+      margin-bottom: 10px;
+    }
+
+    .date-btn {
+      background-color: #ffffff;
+      border: 1.5px solid var(--primary-color);
+      color: var(--text-dark);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 0.88em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .date-btn:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .date-btn.active {
+      background-color: #3498db;
+      border-color: #2980b9;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(52, 152, 219, 0.35);
+    }
+
+    .summary-text {
+      text-align: center;
+      width: 100%;
+      max-width: 450px;
+      margin: 10px 0 15px 0;
+      color: var(--red-color);
+      font-weight: 700;
+      font-size: 1.15em; 
+    }
+
+    .desktop-text { display: inline-block; }
+    .mobile-text { display: none; }
+
+    .table-wrapper {
+      width: 100%; max-width: 450px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      background-color: #fff; overflow: hidden;
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      table-layout: fixed; 
+    }
+
+    th, td {
+      padding: 8px 10px; text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.9em; line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    th { 
+      background-color: var(--orange-accent); 
+      color: var(--text-dark);
+      font-weight: 600; 
+      padding: 10px; 
+      border: none;
+      font-size: 0.95em;
+    }
+
+    th:nth-child(1), td:nth-child(1) {
+      width: 32%;
+      text-align: center;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      width: 44%;
+      padding-left: 15px !important;
+      text-align: left;
+    }
+
+    td:nth-child(2) {
+      color: black; /* เปลี่ยนสีชื่อหวยในตารางเป็นสีดำ */
+    }
+
+    th:nth-child(3), td:nth-child(3) {
+      width: 24%;
+      text-align: center;
+    }
+
+    tr:nth-child(even) { background-color: #fcfdfe; }
+    tr:hover { background-color: var(--secondary-color); }
+
+    .loading { text-align: center; padding: 15px; font-size: 1em; }
+
+    .overlay {
+      display: none; position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.35); z-index: 850;
+    }
+
+    /* ตกแต่งสไตล์สำหรับหน้าจอมือถือ */
+    @media (max-width: 768px) {
+      .mobile-header { 
+        display: flex; 
+        padding: 0 10px;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+      }
+
+      /* เพิ่มระยะห่างเว้นขวาเพื่อดันปุ่มอัปเดตไปทางซ้ายให้อยู่ตรงตำแหน่งกรอบสีแดง */
+      .mobile-header .btn-update {
+        margin-right: 35px;
+      }
+
+      .sidebar { top: 50px; height: calc(100vh - 50px); transform: translateX(-100%); width: 250px; }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar .header { display: none; }
+      .content { margin-left: 0; width: 100%; padding: 55px 10px 15px 10px; display: flex; flex-direction: column; align-items: center; }
+      .content-header-container { max-width: 100%; justify-content: center; }
+      .desktop-action-buttons { display: none !important; }
+      .table-wrapper { max-width: 100%; margin: 15px auto; }
+      
+      th, td { 
+        padding: 8px 6px; 
+        font-size: 0.95em; 
+        line-height: 1.1; 
+      }
+
+      td strong {
+        font-size: 1.0em;
+        letter-spacing: 0.5px;
+      }
+
+      .overlay.active { display: block; }
+      
+      .date-tabs { justify-content: center; gap: 8px; width: 100%; }
+      .date-btn {
+        width: 42px; 
+        height: 42px;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 0.95em;
+      }
+      .summary-text { max-width: 100%; text-align: center; margin: 10px auto 15px auto; }
+      .desktop-text { display: none; }
+      .mobile-text { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-header">
+    <div class="brand">Lotto941</div>
+    <div class="header-actions">
+      <!-- ปุ่มอัปเดตบนมือถือ -->
+      <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
+        <span class="spin-icon">⚡</span> อัปเดต
+      </button>
+      <button class="btn-refresh" onclick="refreshCurrentView()">
+        <span class="spin-icon">🔄</span>
+      </button>
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <div class="header">Lotto941</div>
+    
+    <div class="menu-item" style="background-color: var(--orange-accent); color: var(--text-dark);" onclick="showLatestResults()">
+      <span style="font-weight: 600;">⭐ ผลหวยล่าสุดทั้งหมด</span>
+    </div>
+
+    <div class="menu-item" style="background-color: #3498db; color: #ffffff;" onclick="showHistoryResults()">
+      <span style="font-weight: 600;">📊 สถิติย้อนหลัง 7 วัน</span>
+    </div>
+
+    <div id="menu-container">
+      <div class="loading" id="menu-loading">กำลังโหลดเมนู...</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="content-header-container">
+      <h2 id="content-title">⭐ ผลหวยล่าสุดทั้งหมด</h2>
+      <div class="action-buttons desktop-action-buttons">
+        <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
+          <span class="spin-icon">⚡</span> อัปเดตข้อมูล
+        </button>
+        <button class="btn-refresh" onclick="refreshCurrentView()">
+          <span class="spin-icon">🔄</span> Refresh
+        </button>
+      </div>
+    </div>
+    
+    <div class="loading" id="data-loading" style="display:none;">กำลังโหลดข้อมูล...</div>
+    <div id="table-container"></div>
+  </div>
+
+  <script>
+    let activeColIndex = null;
+    let historyCache = null;
+    let currentHistoryDate = null;
+    let currentView = 'latest';
+
+    document.addEventListener("DOMContentLoaded", function() {
+      google.script.run.withSuccessHandler(buildMenu).getMenuData();
+      showLatestResults();
+    });
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+      }
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('active');
+    }
+
+    function setRefreshLoading(isLoading) {
+      const btns = document.querySelectorAll('.btn-refresh');
+      btns.forEach(btn => {
+        if (isLoading) {
+          btn.classList.add('loading');
+          btn.disabled = true;
+        } else {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      });
+    }
+
+    function setUpdateLoading(isLoading) {
+      const btns = document.querySelectorAll('.btn-update');
+      btns.forEach(btn => {
+        if (isLoading) {
+          btn.classList.add('loading');
+          btn.disabled = true;
+        } else {
+          btn.classList.remove('loading');
+          btn.disabled = false;
+        }
+      });
+    }
+
+    function executeUpdateAll() {
+      if (!confirm("คุณต้องการรันสคริปต์อัปเดตข้อมูลทั้งหมดใช่หรือไม่?")) {
+        return;
+      }
+      
+      setUpdateLoading(true);
+      document.getElementById('data-loading').style.display = 'block';
+      document.getElementById('data-loading').textContent = 'กำลังรันสคริปต์อัปเดตข้อมูล กรุณารอสักครู่...';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          setUpdateLoading(false);
+          document.getElementById('data-loading').textContent = 'กำลังโหลดข้อมูล...';
+          refreshCurrentView();
+        })
+        .withFailureHandler(function(err) {
+          setUpdateLoading(false);
+          document.getElementById('data-loading').style.display = 'none';
+          document.getElementById('data-loading').textContent = 'กำลังโหลดข้อมูล...';
+          alert('เกิดข้อผิดพลาดในการรันสคริปต์: ' + err.message);
+        })
+        .runUpdateAll();
+    }
+
+    function refreshCurrentView() {
+      if (currentView === 'latest') {
+        showLatestResults();
+      } else if (currentView === 'history') {
+        historyCache = null;
+        showHistoryResults();
+      } else if (currentView === 'detail' && activeColIndex !== null) {
+        loadTableData(activeColIndex);
+      }
+    }
+
+    function updateButtonVisibility() {
+      const updateBtns = document.querySelectorAll('.update-all-btn');
+      updateBtns.forEach(btn => {
+        if (currentView === 'latest') {
+          btn.style.display = 'inline-flex';
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    }
+
+    function showLatestResults() {
+      currentView = 'latest';
+      updateButtonVisibility();
+      document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('content-title').textContent = "⭐ ผลหวยล่าสุดทั้งหมด";
+      document.getElementById('table-container').innerHTML = '';
+      document.getElementById('data-loading').style.display = 'block';
+      setRefreshLoading(true);
+      closeSidebar();
+      
+      google.script.run.withSuccessHandler(buildLatestTables).getLatestResults();
+    }
+
+    function buildLatestTables(data) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      const container = document.getElementById('table-container');
+      
+      if (!data || Object.keys(data).length === 0) {
+        container.innerHTML = '<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลผลรางวัลล่าสุด</p>';
+        return;
+      }
+      
+      let totalDuplicateCount = 0;
+      let htmlTables = '';
+      const desiredOrder = ["หวยลาว", "หวยฮานอย", "หวยหุ้น", "หวย VIP", "หวย VISA", "หวยพิเศษ"];
+      const existingCategories = Object.keys(data);
+      let sortedCategories = [];
+      
+      desiredOrder.forEach(cat => {
+        let foundKey = existingCategories.find(key => key.toLowerCase() === cat.toLowerCase());
+        if (foundKey) sortedCategories.push(foundKey);
+      });
+      
+      existingCategories.forEach(cat => {
+        if (!sortedCategories.includes(cat)) sortedCategories.push(cat);
+      });
+      
+      for (const category of sortedCategories) {
+        if (!data[category] || data[category].length === 0) continue;
+        
+        let tbodyHtml = '';
+        
+        data[category].forEach(row => {
+          let cleanVal = String(row.value).replace(/\s/g, '');
+          let isDuplicate = false;
+          
+          if (cleanVal !== "-" && cleanVal !== "") {
+            let uniqueChars = new Set(cleanVal.split(''));
+            if (uniqueChars.size < cleanVal.length) {
+              isDuplicate = true;
+              totalDuplicateCount++;
+            }
+          }
+          
+          let textColorStyle = isDuplicate ? 'color: var(--red-color);' : 'color: inherit;';
+          tbodyHtml += `<tr>
+                         <td>${row.date}</td>
+                         <td>${row.name}</td>
+                         <td style="${textColorStyle}"><strong>${row.value}</strong></td>
+                       </tr>`;
+        });
+        
+        htmlTables += '<div class="table-wrapper"><table>';
+        htmlTables += `<thead><tr><th>วันที่ล่าสุด</th><th>${category}</th><th>ผลรางวัล</th></tr></thead>`;
+        htmlTables += `<tbody>${tbodyHtml}</tbody></table></div>`;
+      }
+      
+      let summaryHtml = '';
+      if (totalDuplicateCount > 0) {
+        summaryHtml = `<div class="summary-text">(เบิ้ล/ตอง) รวม ${totalDuplicateCount} รายการ</div>`;
+      } else {
+        summaryHtml = `<div class="summary-text" style="color: var(--text-dark);">ไม่พบเลขซ้ำ</div>`;
+      }
+      
+      container.innerHTML = summaryHtml + htmlTables;
+    }
+
+    function showHistoryResults() {
+      currentView = 'history';
+      updateButtonVisibility();
+      document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('content-title').textContent = "📊 สถิติย้อนหลัง 7 วัน";
+      document.getElementById('table-container').innerHTML = '';
+      document.getElementById('data-loading').style.display = 'block';
+      setRefreshLoading(true);
+      closeSidebar();
+      
+      google.script.run.withSuccessHandler(buildHistoryUI).get7DaysHistory();
+    }
+
+    function buildHistoryUI(res) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      const container = document.getElementById('table-container');
+
+      if (!res || !res.dates || res.dates.length === 0) {
+        container.innerHTML = '<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลสถิติย้อนหลัง</p>';
+        return;
+      }
+
+      historyCache = res;
+      if (!currentHistoryDate || !res.dates.includes(currentHistoryDate)) {
+        currentHistoryDate = res.dates[0];
+      }
+
+      renderHistoryDateView();
+    }
+
+    function renderHistoryDateView() {
+      const container = document.getElementById('table-container');
+      
+      let tabsHtml = '<div class="date-tabs">';
+      historyCache.dates.forEach((dStr, idx) => {
+        let isActive = (dStr === currentHistoryDate) ? 'active' : '';
+        let dayOnly = dStr.split('/')[0]; 
+        let labelDesktop = (idx === 0) ? `📅 ${dStr} (ล่าสุด)` : `📅 ${dStr}`;
+        
+        tabsHtml += `<button class="date-btn ${isActive}" onclick="switchHistoryDate('${dStr}')">
+                   <span class="desktop-text">${labelDesktop}</span>
+                   <span class="mobile-text">${dayOnly}</span>
+                 </button>`;
+      });
+      tabsHtml += '</div>';
+
+      const dateData = historyCache.dataByDate[currentHistoryDate];
+      if (!dateData || Object.keys(dateData).length === 0) {
+        container.innerHTML = tabsHtml + '<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลของวันที่นี้</p>';
+        return;
+      }
+
+      const desiredOrder = ["หวยลาว", "หวยฮานอย", "หวยหุ้น", "หวย VIP", "หวย VISA", "หวยพิเศษ"];
+      const existingCategories = Object.keys(dateData);
+      let sortedCategories = [];
+
+      desiredOrder.forEach(cat => {
+        let foundKey = existingCategories.find(key => key.toLowerCase() === cat.toLowerCase());
+        if (foundKey) sortedCategories.push(foundKey);
+      });
+
+      existingCategories.forEach(cat => {
+        if (!sortedCategories.includes(cat)) sortedCategories.push(cat);
+      });
+
+      let htmlTables = '';
+      let dailyDuplicateCount = 0; 
+
+      for (const category of sortedCategories) {
+        if (!dateData[category] || dateData[category].length === 0) continue;
+        
+        let catDuplicateCount = 0; 
+        let tbodyHtml = '';
+
+        dateData[category].forEach(row => {
+          let cleanVal = String(row.value).replace(/\s/g, '');
+          let isDuplicate = false;
+
+          if (cleanVal !== "-" && cleanVal !== "") {
+            let uniqueChars = new Set(cleanVal.split(''));
+            if (uniqueChars.size < cleanVal.length) {
+              isDuplicate = true;
+              catDuplicateCount++; 
+              dailyDuplicateCount++;
+            }
+          }
+
+          let textColorStyle = isDuplicate ? 'color: var(--red-color);' : 'color: inherit;';
+          tbodyHtml += `<tr>
+                         <td>${row.date}</td>
+                         <td>${row.name}</td>
+                         <td style="${textColorStyle}"><strong>${row.value}</strong></td>
+                       </tr>`;
+        });
+
+        htmlTables += '<div class="table-wrapper"><table>';
+        htmlTables += `<thead><tr><th>วันที่</th><th>${category}</th><th>ผลรางวัล</th></tr></thead>`;
+        htmlTables += `<tbody>${tbodyHtml}</tbody>`;
+        
+        if (catDuplicateCount > 0) {
+          htmlTables += `<tfoot>
+                           <tr>
+                             <td colspan="3" style="text-align: right; font-size: 0.85em; color: var(--red-color); background-color: var(--secondary-color); padding: 6px 15px;">
+                               พบ <strong>${catDuplicateCount}</strong> รายการ
+                             </td>
+                           </tr>
+                         </tfoot>`;
+        }
+        
+        htmlTables += '</table></div>';
+      }
+
+      let summaryHtml = '';
+      if (dailyDuplicateCount > 0) {
+        summaryHtml = `<div class="summary-text">
+                         (เบิ้ล/ตอง) รวม ${dailyDuplicateCount} รายการ
+                       </div>`;
+      } else {
+        summaryHtml = `<div class="summary-text" style="color: var(--text-dark);">
+                         ไม่พบเลขซ้ำ
+                       </div>`;
+      }
+
+      container.innerHTML = tabsHtml + summaryHtml + htmlTables;
+    }
+
+    function switchHistoryDate(dStr) {
+      currentHistoryDate = dStr;
+      renderHistoryDateView();
+    }
+
+    function buildMenu(menuData) {
+      document.getElementById('menu-loading').style.display = 'none';
+      const container = document.getElementById('menu-container');
+      
+      const desiredOrder = ["หวยลาว", "หวยฮานอย", "หวยหุ้น", "หวย VIP", "หวย VISA", "หวยพิเศษ"];
+      const existingCategories = Object.keys(menuData);
+      let sortedCategories = [];
+      
+      desiredOrder.forEach(cat => {
+        let foundKey = existingCategories.find(key => key.toLowerCase() === cat.toLowerCase());
+        if (foundKey) sortedCategories.push(foundKey);
+      });
+      
+      existingCategories.forEach(cat => {
+        if (!sortedCategories.includes(cat)) sortedCategories.push(cat);
+      });
+      
+      for (const mainCat of sortedCategories) {
+        let div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `<span>${mainCat}</span> <span>▼</span>`;
+        
+        let subMenuDiv = document.createElement('div');
+        subMenuDiv.className = 'sub-menu';
+        
+        menuData[mainCat].forEach(subCat => {
+          let subDiv = document.createElement('div');
+          subDiv.className = 'sub-menu-item';
+          subDiv.textContent = subCat.name;
+          subDiv.onclick = function() {
+            document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
+            subDiv.classList.add('active');
+            
+            document.getElementById('content-title').textContent = `${mainCat} - ${subCat.name}`;
+            activeColIndex = subCat.colIndex;
+            loadTableData(subCat.colIndex);
+            closeSidebar();
+          };
+          subMenuDiv.appendChild(subDiv);
+        });
+        
+        div.onclick = function() {
+          const isVisible = subMenuDiv.style.display === 'block';
+          document.querySelectorAll('.sub-menu').forEach(el => el.style.display = 'none');
+          if (!isVisible) subMenuDiv.style.display = 'block';
+        };
+        
+        container.appendChild(div);
+        container.appendChild(subMenuDiv);
+      }
+    }
+
+    function loadTableData(colIndex) {
+      currentView = 'detail';
+      updateButtonVisibility();
+      activeColIndex = colIndex;
+      document.getElementById('table-container').innerHTML = '';
+      document.getElementById('data-loading').style.display = 'block';
+      setRefreshLoading(true);
+      google.script.run.withSuccessHandler(buildTable).getTableData(colIndex);
+    }
+
+    function buildTable(data) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      const container = document.getElementById('table-container');
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลสำหรับหวยนี้</p>';
+        return;
+      }
+      
+      let html = '<div class="table-wrapper"><table>';
+      html += '<thead><tr><th style="width:50%;">วันที่</th><th style="width:50%;">ผลรางวัล</th></tr></thead>';
+      html += '<tbody>';
+      
+      data.forEach(row => {
+        let cleanVal = String(row.value).replace(/\s/g, '');
+        let isDuplicate = false;
+        
+        if (cleanVal !== "-" && cleanVal !== "") {
+          let uniqueChars = new Set(cleanVal.split(''));
+          if (uniqueChars.size < cleanVal.length) {
+            isDuplicate = true;
+          }
+        }
+        
+        let textColorStyle = isDuplicate ? 'color: var(--red-color);' : 'color: inherit;';
+        html += `<tr><td>${row.date}</td><td style="${textColorStyle}"><strong>${row.value}</strong></td></tr>`;
+      });
+      
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
