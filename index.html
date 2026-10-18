@@ -443,10 +443,20 @@
     // ===== ตัวเชื่อมกับ Apps Script เมื่อรันบน GitHub Pages =====
     // แก้ URL ด้านล่างเป็นลิงก์ Web app ที่ลงท้ายด้วย /exec (จาก Deploy ใน Apps Script)
     if (!window.google || !window.google.script) {
-      const API_URL = 'https://script.google.com/macros/s/AKfycbzyb3RBa4_yFNB-E_NqXBqy4bl0BS7gNbpOzs1pp6nKphIr3t4yUQ1BfMFeo2-m6MP9rA/exec';
+      const API_URL = 'https://script.google.com/macros/s/AKfycbxObLYeOatO_rTWfe5I0d8YqJzaCEhTU8UN5LhbM-Y8cEwVV9SRstZ_Wv5UxsvCQYus/exec';
 
       window.google = { script: { get run() {
-        let ok = () => {}, fail = () => {};
+        let ok = () => {};
+        // ถ้าไม่ได้กำหนด failure handler ให้แสดงข้อผิดพลาดบนหน้าเว็บ (แทนที่จะโหลดค้างเงียบๆ)
+        let fail = (e) => {
+          console.error('API error:', e);
+          const msg = '⚠️ เชื่อมต่อข้อมูลไม่สำเร็จ: ' + (e && e.message ? e.message : e) +
+                      ' (ตรวจว่า Deploy Apps Script เป็นเวอร์ชันใหม่แล้ว และตั้งสิทธิ์เป็น Anyone)';
+          ['menu-loading', 'data-loading'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.display = 'block'; el.style.color = 'var(--red-color)'; el.textContent = msg; }
+          });
+        };
         const p = new Proxy({}, { get(_, name) {
           if (name === 'withSuccessHandler') return f => { ok = f; return p; };
           if (name === 'withFailureHandler') return f => { fail = f; return p; };
