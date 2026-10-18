@@ -4,6 +4,7 @@
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lotto941</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -296,6 +297,11 @@
       background-color: rgba(0,0,0,0.35); z-index: 850;
     }
 
+    /* แผงรายการย่อย (แสดงด้านขวาของเมนูบนมือถือ) */
+    .flyout { display: none; }
+    .arrow-m { display: none; }
+    .menu-item.active-cat { background-color: var(--secondary-color); }
+
     /* ตกแต่งสไตล์สำหรับหน้าจอมือถือ */
     @media (max-width: 768px) {
       .mobile-header { 
@@ -315,7 +321,7 @@
         margin-right: 35px;
       }
 
-      .sidebar { top: 50px; height: calc(100vh - 50px); transform: translateX(-100%); width: 250px; }
+      .sidebar { top: 50px; height: calc(100vh - 50px); transform: translateX(-100%); width: 140px; }
       .sidebar.open { transform: translateX(0); }
       .sidebar .header { display: none; }
       .content { margin-left: 0; width: 100%; padding: 55px 10px 15px 10px; display: flex; flex-direction: column; align-items: center; }
@@ -335,6 +341,35 @@
       }
 
       .overlay.active { display: block; }
+
+      /* รายการย่อยบนมือถือ: ซ่อนแบบเลื่อนลง แล้วแสดงเป็นแผงด้านขวาแทน */
+      .sub-menu { display: none !important; }
+      .sidebar .menu-item { padding: 12px 10px; }
+      .arrow-d { display: none; }
+      .arrow-m { display: inline; }
+
+      .flyout.open {
+        display: block;
+        position: fixed;
+        top: 50px; left: 140px; right: 0; bottom: 0;
+        background-color: #ffffff;
+        overflow-y: auto;
+        z-index: 950;
+        box-shadow: -2px 0 8px rgba(0,0,0,0.12);
+        border-left: 1px solid #e5e5e5;
+      }
+      .flyout-title {
+        position: sticky; top: 0;
+        padding: 10px 12px;
+        background-color: var(--primary-color);
+        color: var(--text-dark);
+        font-weight: 600; font-size: 0.9em;
+      }
+      .flyout .sub-menu-item {
+        padding: 12px 12px;
+        white-space: normal;
+        line-height: 1.25;
+      }
       
       .date-tabs { justify-content: center; gap: 8px; width: 100%; }
       .date-btn {
@@ -372,11 +407,11 @@
     <div class="header">Lotto941</div>
     
     <div class="menu-item" style="background-color: var(--orange-accent); color: var(--text-dark);" onclick="showLatestResults()">
-      <span style="font-weight: 600;">⭐ ผลหวยล่าสุดทั้งหมด</span>
+      <span style="font-weight: 600;">⭐ ล่าสุด</span>
     </div>
 
     <div class="menu-item" style="background-color: #3498db; color: #ffffff;" onclick="showHistoryResults()">
-      <span style="font-weight: 600;">📊 สถิติย้อนหลัง 7 วัน</span>
+      <span style="font-weight: 600;">📊 สถิติ 7 วัน</span>
     </div>
 
     <div id="menu-container">
@@ -384,9 +419,12 @@
     </div>
   </div>
 
+  <!-- แผงรายการย่อยสำหรับมือถือ -->
+  <div class="flyout" id="flyout"></div>
+
   <div class="content">
     <div class="content-header-container">
-      <h2 id="content-title">⭐ ผลหวยล่าสุดทั้งหมด</h2>
+      <h2 id="content-title">⭐ ล่าสุด</h2>
       <div class="action-buttons desktop-action-buttons">
         <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
           <span class="spin-icon">⚡</span> อัปเดตข้อมูล
@@ -402,6 +440,37 @@
   </div>
 
   <script>
+    // ===== ตัวเชื่อมกับ Apps Script เมื่อรันบน GitHub Pages =====
+    // แก้ URL ด้านล่างเป็นลิงก์ Web app ที่ลงท้ายด้วย /exec (จาก Deploy ใน Apps Script)
+    if (!window.google || !window.google.script) {
+      const API_URL = 'https://script.google.com/macros/s/AKfycbzyb3RBa4_yFNB-E_NqXBqy4bl0BS7gNbpOzs1pp6nKphIr3t4yUQ1BfMFeo2-m6MP9rA/exec';
+
+      window.google = { script: { get run() {
+        let ok = () => {}, fail = () => {};
+        const p = new Proxy({}, { get(_, name) {
+          if (name === 'withSuccessHandler') return f => { ok = f; return p; };
+          if (name === 'withFailureHandler') return f => { fail = f; return p; };
+          return (...args) => {
+            let url = API_URL + '?fn=' + encodeURIComponent(name) +
+                      '&args=' + encodeURIComponent(JSON.stringify(args));
+
+            if (name === 'runUpdateAll') {
+              const key = prompt('ใส่รหัสผ่านสำหรับอัปเดตข้อมูล');
+              if (key === null) { fail(new Error('ยกเลิก')); return; }
+              url += '&key=' + encodeURIComponent(key);
+            }
+
+            fetch(url)
+              .then(r => r.json())
+              .then(j => { if (j.error) throw new Error(j.error); ok(j.result); })
+              .catch(e => fail(e));
+          };
+        }});
+        return p;
+      } } };
+    }
+
+    // ===== โค้ดเดิมของหน้าเว็บ =====
     let activeColIndex = null;
     let historyCache = null;
     let currentHistoryDate = null;
@@ -426,6 +495,54 @@
     function closeSidebar() {
       document.getElementById('sidebar').classList.remove('open');
       document.getElementById('overlay').classList.remove('active');
+      hideFlyout();
+    }
+
+    function isMobile() {
+      return window.matchMedia('(max-width: 768px)').matches;
+    }
+
+    function hideFlyout() {
+      const fly = document.getElementById('flyout');
+      fly.classList.remove('open');
+      fly.dataset.cat = '';
+      document.querySelectorAll('.menu-item.active-cat').forEach(el => el.classList.remove('active-cat'));
+    }
+
+    function toggleFlyout(mainCat, items, menuEl) {
+      const fly = document.getElementById('flyout');
+
+      // กดหมวดเดิมซ้ำ = ปิดแผง
+      if (fly.classList.contains('open') && fly.dataset.cat === mainCat) {
+        hideFlyout();
+        return;
+      }
+
+      hideFlyout();
+      fly.innerHTML = '';
+
+      const title = document.createElement('div');
+      title.className = 'flyout-title';
+      title.textContent = mainCat;
+      fly.appendChild(title);
+
+      items.forEach(subCat => {
+        const subDiv = document.createElement('div');
+        subDiv.className = 'sub-menu-item';
+        subDiv.textContent = subCat.name;
+        subDiv.onclick = function() {
+          document.getElementById('content-title').textContent = `${mainCat} - ${subCat.name}`;
+          activeColIndex = subCat.colIndex;
+          loadTableData(subCat.colIndex);
+          closeSidebar();
+        };
+        fly.appendChild(subDiv);
+      });
+
+      fly.dataset.cat = mainCat;
+      fly.scrollTop = 0;
+      fly.classList.add('open');
+      menuEl.classList.add('active-cat');
     }
 
     function setRefreshLoading(isLoading) {
@@ -504,7 +621,7 @@
       currentView = 'latest';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('content-title').textContent = "⭐ ผลหวยล่าสุดทั้งหมด";
+      document.getElementById('content-title').textContent = "⭐ ล่าสุด";
       document.getElementById('table-container').innerHTML = '';
       document.getElementById('data-loading').style.display = 'block';
       setRefreshLoading(true);
@@ -582,7 +699,7 @@
       currentView = 'history';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('content-title').textContent = "📊 สถิติย้อนหลัง 7 วัน";
+      document.getElementById('content-title').textContent = "📊 สถิติ 7 วัน";
       document.getElementById('table-container').innerHTML = '';
       document.getElementById('data-loading').style.display = 'block';
       setRefreshLoading(true);
@@ -730,7 +847,7 @@
       for (const mainCat of sortedCategories) {
         let div = document.createElement('div');
         div.className = 'menu-item';
-        div.innerHTML = `<span>${mainCat}</span> <span>▼</span>`;
+        div.innerHTML = `<span>${mainCat}</span> <span class="arrow-d">▼</span><span class="arrow-m">▶</span>`;
         
         let subMenuDiv = document.createElement('div');
         subMenuDiv.className = 'sub-menu';
@@ -752,6 +869,12 @@
         });
         
         div.onclick = function() {
+          // มือถือ: แสดงรายการย่อยเป็นแผงด้านขวา
+          if (isMobile()) {
+            toggleFlyout(mainCat, menuData[mainCat], div);
+            return;
+          }
+          // เดสก์ท็อป: เลื่อนลงเหมือนเดิม
           const isVisible = subMenuDiv.style.display === 'block';
           document.querySelectorAll('.sub-menu').forEach(el => el.style.display = 'none');
           if (!isVisible) subMenuDiv.style.display = 'block';
