@@ -630,6 +630,16 @@
       });
     }
 
+    let menuTotalCount = 0;      // จำนวนหวยทั้งหมดจากเมนู
+    let latestOutCount = null;   // จำนวนที่ออกผลแล้ววันนี้
+    let latestRowCount = 0;      // สำรอง: จำนวนแถวในหน้าล่าสุด
+
+    function refreshResultCount() {
+      if (currentView !== 'latest' || latestOutCount === null) return;
+      const total = menuTotalCount || latestRowCount;
+      setResultCount(`ออกผลแล้ว ${latestOutCount} / ${total}`);
+    }
+
     function setResultCount(text) {
       const el = document.getElementById('result-count');
       if (el) el.textContent = text || '';
@@ -646,6 +656,7 @@
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
       document.getElementById('content-title').textContent = "⭐ ล่าสุด";
+      latestOutCount = null;
       setResultCount('');
       document.getElementById('table-container').innerHTML = '';
       document.getElementById('data-loading').style.display = 'block';
@@ -723,7 +734,9 @@
       }
       
       container.innerHTML = summaryHtml + htmlTables;
-      setResultCount(`ออกผลแล้ว ${resultOutCount} / ${resultTotalCount}`);
+      latestOutCount = resultOutCount;
+      latestRowCount = resultTotalCount;
+      refreshResultCount();
     }
 
     function showHistoryResults() {
@@ -860,6 +873,8 @@
     }
 
     function buildMenu(menuData) {
+      menuTotalCount = Object.values(menuData).reduce((n, arr) => n + (arr ? arr.length : 0), 0);
+      refreshResultCount();
       document.getElementById('menu-loading').style.display = 'none';
       const container = document.getElementById('menu-container');
       
