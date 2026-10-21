@@ -97,8 +97,10 @@
       padding: 10px 15px 10px 30px; cursor: pointer;
       border-bottom: 1px solid #f0f0f0;
       font-size: 0.88em; user-select: none;
-      color: #ff0000; /* เมนูย่อยสีแดงสด */
+      color: black; /* เปลี่ยนสีเมนูย่อยเป็นสีดำ */
     }
+
+    .sub-menu-item.red-name { color: #ff0000; }
 
     .sub-menu-item:hover, .sub-menu-item.active {
       background-color: var(--hover-color); color: #fff;
@@ -533,7 +535,7 @@
       items.forEach(subCat => {
         const subDiv = document.createElement('div');
         subDiv.className = 'sub-menu-item';
-        subDiv.textContent = subCat.name;
+        subDiv.textContent = subCat.name; markRed(subDiv, subCat.name);
         subDiv.onclick = function() {
           document.getElementById('content-title').textContent = `${mainCat} - ${subCat.name}`;
           activeColIndex = subCat.colIndex;
@@ -859,7 +861,7 @@
         menuData[mainCat].forEach(subCat => {
           let subDiv = document.createElement('div');
           subDiv.className = 'sub-menu-item';
-          subDiv.textContent = subCat.name;
+          subDiv.textContent = subCat.name; markRed(subDiv, subCat.name);
           subDiv.onclick = function() {
             document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
             subDiv.classList.add('active');
@@ -887,6 +889,12 @@
         container.appendChild(div);
         container.appendChild(subMenuDiv);
       }
+    }
+
+    // รายชื่อที่ต้องแสดงเป็นสีแดงสด
+    const RED_NAMES = new Set(["ลาว Star", "ลาวสามัคคี", "ลาวพัฒนา", "ลาว VIP", "ลาวสามัคคี VIP", "ลาวสตาร์ VIP", "ลาวกาชาด", "ฮานอย TV", "ฮานอยกาชาด", "ฮานอยพิเศษ", "ฮานอยปกติ", "ฮานอย VIP", "ฮานอยพัฒนา", "ฮานอย Extra", "หุ้นเกาหลี", "หุ้นนิเคอิ บ่าย", "หุ้นจีน บ่าย", "หุ้นฮั่งเส็ง บ่าย", "หุ้นสิงคโปร์", "หุ้นไทย เย็น", "หุ้นอินเดีย", "หุ้นอียิปต์", "หุ้นเยอรมัน", "หุ้นอังกฤษ", "หุ้นรัสเซีย", "หุ้นดาวน์โจนส์", "เกาหลี VIP", "นิเคอิ VIP บ่าย", "จีน VIP บ่าย", "ฮั่งเส็ง VIP บ่าย", "สิงค์โปร VIP", "อังกฤษ VIP", "เยอรมัน VIP", "รัสเซีย VIP", "ดาวน์โจนส์ VIP", "นิเคอิ VISA บ่าย", "จีน VISA บ่าย", "ฮั่งเส็ง VISA บ่าย", "ฮานอย VISA", "อังกฤษ VISA", "เยอรมัน VISA", "รัสเซีย VISA", "ดาวน์โจนส์ VISA"].map(n => n.replace(/\s+/g,'').toLowerCase()));
+    function markRed(el, name) {
+      if (RED_NAMES.has(String(name).replace(/\s+/g,'').toLowerCase())) el.classList.add('red-name');
     }
 
     function loadTableData(colIndex) {
