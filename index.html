@@ -222,6 +222,12 @@
       box-shadow: 0 2px 6px rgba(52, 152, 219, 0.35);
     }
 
+    .result-count {
+      font-weight: 700; font-size: 0.95em;
+      color: var(--text-dark);
+      white-space: nowrap;
+    }
+
     .summary-text {
       text-align: center;
       width: 100%;
@@ -427,6 +433,7 @@
   <div class="content">
     <div class="content-header-container">
       <h2 id="content-title">⭐ ล่าสุด</h2>
+      <span id="result-count" class="result-count"></span>
       <div class="action-buttons desktop-action-buttons">
         <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
           <span class="spin-icon">⚡</span> อัปเดตข้อมูล
@@ -623,11 +630,23 @@
       });
     }
 
+    function setResultCount(text) {
+      const el = document.getElementById('result-count');
+      if (el) el.textContent = text || '';
+    }
+
+    function todayStrBKK() {
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(new Date());
+      const g = t => parts.find(p => p.type === t).value;
+      return `${g('day')}/${g('month')}/${g('year')}`;
+    }
+
     function showLatestResults() {
       currentView = 'latest';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
       document.getElementById('content-title').textContent = "⭐ ล่าสุด";
+      setResultCount('');
       document.getElementById('table-container').innerHTML = '';
       document.getElementById('data-loading').style.display = 'block';
       setRefreshLoading(true);
@@ -647,6 +666,9 @@
       }
       
       let totalDuplicateCount = 0;
+      let resultOutCount = 0;
+      let resultTotalCount = 0;
+      const todayStr = todayStrBKK();
       let htmlTables = '';
       const desiredOrder = ["หวยลาว", "หวยฮานอย", "หวยหุ้น", "หวย VIP", "หวย VISA", "หวยพิเศษ"];
       const existingCategories = Object.keys(data);
@@ -669,8 +691,10 @@
         data[category].forEach(row => {
           let cleanVal = String(row.value).replace(/\s/g, '');
           let isDuplicate = false;
+          resultTotalCount++;
           
           if (cleanVal !== "-" && cleanVal !== "") {
+            if (String(row.date).trim() === todayStr) resultOutCount++;
             let uniqueChars = new Set(cleanVal.split(''));
             if (uniqueChars.size < cleanVal.length) {
               isDuplicate = true;
@@ -699,6 +723,7 @@
       }
       
       container.innerHTML = summaryHtml + htmlTables;
+      setResultCount(`ออกผลแล้ว ${resultOutCount} / ${resultTotalCount}`);
     }
 
     function showHistoryResults() {
@@ -706,6 +731,7 @@
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
       document.getElementById('content-title').textContent = "📊 สถิติ 7 วัน";
+      setResultCount('');
       document.getElementById('table-container').innerHTML = '';
       document.getElementById('data-loading').style.display = 'block';
       setRefreshLoading(true);
@@ -899,6 +925,7 @@
 
     function loadTableData(colIndex) {
       currentView = 'detail';
+      setResultCount('');
       updateButtonVisibility();
       activeColIndex = colIndex;
       document.getElementById('table-container').innerHTML = '';
