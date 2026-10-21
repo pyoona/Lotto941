@@ -150,6 +150,45 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
+    .btn-cal {
+      background-color: #ffffff;
+      color: var(--text-dark);
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 0.85em;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      pointer-events: none;   /* ให้แตะโดนช่องเลือกวันที่ที่ซ้อนอยู่ด้านบนแทน */
+    }
+    .cal-wrap { position: relative; display: none; align-items: center; }
+    .cal-wrap:hover .btn-cal { background-color: var(--secondary-color); }
+    .cal-wrap:hover .btn-cal.has-date { background-color: #2980b9; }
+    .cal-input {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; border: 0; padding: 0; margin: 0;
+      font-size: 16px; z-index: 2;
+    }
+    .cal-input::-webkit-calendar-picker-indicator {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      margin: 0; padding: 0; cursor: pointer;
+    }
+    .btn-cal:hover { background-color: var(--secondary-color); }
+    .btn-cal:active { transform: scale(0.95); }
+    .btn-cal.has-date { background-color: #3498db; border-color: #2980b9; color: #ffffff; }
+
+    .sum-today-btn {
+      margin-left: 8px; padding: 2px 10px; border-radius: 14px;
+      border: 1px solid #2980b9; background: #fff; color: #2980b9;
+      font-family: 'Prompt', sans-serif; font-size: 0.85em; font-weight: 600; cursor: pointer;
+    }
+
     .btn-update {
       background-color: var(--update-btn-color);
       color: #ffffff;
@@ -420,6 +459,10 @@
       <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
         <span class="spin-icon">⚡</span> อัปเดต
       </button>
+      <span class="cal-wrap">
+        <button class="btn-cal" type="button" tabindex="-1"><span>📅</span></button>
+        <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
+      </span>
       <button class="btn-refresh" onclick="refreshCurrentView()">
         <span class="spin-icon">🔄</span>
       </button>
@@ -440,7 +483,7 @@
       <span style="font-weight: 600;">📊 สถิติ 7 วัน</span>
     </div>
 
-    <div class="menu-item" style="background-color: #9b59b6; color: #ffffff;" onclick="showSummary()">
+    <div class="menu-item" style="background-color: #9b59b6; color: #ffffff;" onclick="summaryDate = null; showSummary()">
       <span style="font-weight: 600;">🧮 สรุป</span>
     </div>
 
@@ -460,6 +503,10 @@
         <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
           <span class="spin-icon">⚡</span> อัปเดตข้อมูล
         </button>
+        <span class="cal-wrap">
+          <button class="btn-cal" type="button" tabindex="-1"><span>📅</span> <span class="cal-label">ปฏิทิน</span></button>
+          <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
+        </span>
         <button class="btn-refresh" onclick="refreshCurrentView()">
           <span class="spin-icon">🔄</span> Refresh
         </button>
@@ -510,6 +557,8 @@
     let historyCache = null;
     let currentHistoryDate = null;
     let currentView = 'latest';
+    let summaryDate = null;        // null = วันนี้, ไม่งั้นเป็น 'dd/mm/yyyy'
+    let historyPreloading = false;
 
     document.addEventListener("DOMContentLoaded", function() {
       google.script.run.withSuccessHandler(buildMenu).getMenuData();
@@ -634,6 +683,7 @@
       if (currentView === 'latest') {
         showLatestResults();
       } else if (currentView === 'summary') {
+        if (summaryDate) historyCache = null;   // ดึงสถิติย้อนหลังใหม่
         showSummary();
       } else if (currentView === 'history') {
         historyCache = null;
@@ -651,6 +701,14 @@
         } else {
           btn.style.display = 'none';
         }
+      });
+      // ปุ่มปฏิทิน: แสดงเฉพาะหน้า "สรุป"
+      document.querySelectorAll('.cal-wrap').forEach(w => {
+        w.style.display = (currentView === 'summary') ? 'inline-flex' : 'none';
+        const btn = w.querySelector('.btn-cal');
+        btn.classList.toggle('has-date', !!summaryDate);
+        const lb = btn.querySelector('.cal-label');
+        if (lb) lb.textContent = summaryDate ? summaryDate : 'ปฏิทิน';
       });
     }
 
@@ -842,7 +900,7 @@
       currentView = 'summary';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('content-title').textContent = "🧮 สรุป";
+      document.getElementById('content-title').textContent = "🧮 สรุป" + (summaryDate ? ' ' + summaryDate : '');
       latestOutCount = null;
       setResultCount('');
       document.getElementById('table-container').innerHTML = '';
@@ -850,7 +908,71 @@
       setRefreshLoading(true);
       closeSidebar();
 
-      google.script.run.withSuccessHandler(buildSummary).getLatestResults();
+      if (!summaryDate) {
+        google.script.run.withSuccessHandler(buildSummary).getLatestResults();
+        preloadHistoryForCalendar();
+      } else if (historyCache && historyCache.dataByDate) {
+        buildSummaryFromHistory(historyCache);
+      } else {
+        google.script.run.withSuccessHandler(res => {
+          historyCache = res;
+          buildSummaryFromHistory(res);
+        }).get7DaysHistory();
+      }
+    }
+
+    // ===== ปฏิทินดูสรุปย้อนหลัง =====
+    const isoFromStr = s => { const [d, m, y] = s.split('/'); return `${y}-${m}-${d}`; };
+    const strFromIso = s => { const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+    const DATE_RE = /^\d{2}\/\d{2}\/\d{4}$/;
+
+    // โหลดสถิติย้อนหลังเงียบ ๆ ไว้ล่วงหน้า เพื่อกำหนดช่วงวันที่ที่เลือกได้ในปฏิทิน
+    function preloadHistoryForCalendar() {
+      if (historyCache || historyPreloading) return;
+      historyPreloading = true;
+      google.script.run
+        .withSuccessHandler(res => { historyPreloading = false; if (!historyCache) historyCache = res; })
+        .withFailureHandler(() => { historyPreloading = false; })
+        .get7DaysHistory();
+    }
+
+    // ตั้งช่วงวันที่ที่เลือกได้ตอนผู้ใช้แตะช่องเลือกวันที่ (ช่องจริงซ้อนอยู่บนปุ่ม)
+    function prepareCalendar(el) {
+      const today = todayStrBKK();
+      el.max = isoFromStr(today);
+      el.removeAttribute('min');
+      if (historyCache && historyCache.dates && historyCache.dates.length && historyCache.dates.every(d => DATE_RE.test(d))) {
+        el.min = historyCache.dates.map(isoFromStr).sort()[0];
+      }
+      el.value = isoFromStr(summaryDate || today);
+    }
+
+    function onSummaryDatePicked(v) {
+      if (!v) return;
+      const s = strFromIso(v);
+      summaryDate = (s === todayStrBKK()) ? null : s;
+      showSummary();
+    }
+
+    function resetSummaryToday() {
+      summaryDate = null;
+      showSummary();
+    }
+
+    function buildSummaryFromHistory(res) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      if (currentView !== 'summary') return;
+      const container = document.getElementById('table-container');
+      const data = res && res.dataByDate ? res.dataByDate[summaryDate] : null;
+      if (!data || Object.keys(data).length === 0) {
+        const avail = (res && res.dates && res.dates.length) ? ` (มีข้อมูลย้อนหลัง: ${res.dates[res.dates.length - 1]} – ${res.dates[0]})` : '';
+        container.innerHTML = `<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลของวันที่ ${summaryDate}${avail}</p>` +
+          `<button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>`;
+        updateButtonVisibility();
+        return;
+      }
+      renderSummary(data, null);
     }
 
     function buildSummary(data) {
@@ -864,7 +986,12 @@
         return;
       }
 
-      const todayStr = todayStrBKK();
+      renderSummary(data, todayStrBKK());
+    }
+
+    // filterDate = วันที่ที่ใช้กรองแถว (หน้าวันนี้) / null = ข้อมูลของวันนั้นอยู่แล้ว (ย้อนหลัง)
+    function renderSummary(data, filterDate) {
+      const container = document.getElementById('table-container');
       const counts = SUMMARY_GROUPS.map(() => 0);
       const matches = SUMMARY_GROUPS.map(() => []);
       let outCount = 0;
@@ -873,7 +1000,7 @@
         (data[cat] || []).forEach(row => {
           const val = String(row.value).replace(/\s/g, '');
           if (val === '' || val === '-') return;
-          if (String(row.date).trim() !== todayStr) return;
+          if (filterDate && String(row.date).trim() !== filterDate) return;
           outCount++;
           SUMMARY_GROUPS.forEach((g, i) => { if (g.keys.has(sortKey(val))) { counts[i]++; matches[i].push({ num: val, name: String(row.name || cat).trim() }); } });
         });
@@ -886,7 +1013,7 @@
       });
 
       container.innerHTML =
-        `<div class="sum-note">ผลที่ออกแล้ว ${outCount} รายการ</div>` +
+        `<div class="sum-note">${summaryDate ? `ผลวันที่ ${summaryDate} ทั้งหมด ${outCount} รายการ<button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>` : `ผลที่ออกแล้ว ${outCount} รายการ`}</div>` +
         `<div class="table-wrapper"><table class="sum-table"><thead><tr><th>รายการ</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 
       // กดที่แถวที่มีเลขตรง -> แสดง/ซ่อนรายการเลขที่ออก
