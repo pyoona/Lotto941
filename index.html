@@ -228,6 +228,24 @@
       white-space: nowrap;
     }
 
+    /* ตารางสรุป: จัดคอลัมน์ให้เป็นระเบียบ */
+    .sum-table th:nth-child(1), .sum-table td:nth-child(1) { width: 50%; text-align: left; padding-left: 22px !important; }
+    .sum-table th:nth-child(2), .sum-table td:nth-child(2) { width: 50%; text-align: center; padding: 8px 6px !important; }
+    .sum-row td { font-size: 1.05em; vertical-align: middle; }
+    .sum-row td:first-child { color: var(--text-dark); }
+    .sum-row td:nth-child(2) .sum-count { display: inline-block; min-width: 2em; padding: 2px 8px; border-radius: 10px; }
+    .sum-row.has-match { cursor: pointer; }
+    .sum-row.has-match .sum-count { background: var(--secondary-color); text-decoration: underline; }
+    .sum-row.open { background-color: var(--secondary-color); }
+    .sum-table .sum-detail td:nth-child(1) { width: auto; padding: 4px 0 !important; white-space: normal !important; background: #fffaf5; }
+    .sum-line { display: grid; grid-template-columns: 25% 25% 50%; align-items: center; padding: 6px 0; }
+    .sum-line + .sum-line { border-top: 1px dashed #f0d9c4; }
+    .sum-line b { grid-column: 2; text-align: center; font-size: 1.05em; letter-spacing: 1px; color: var(--text-dark); font-variant-numeric: tabular-nums; }
+    .sum-line span { grid-column: 3; text-align: center; font-size: 1em; font-weight: 600; color: var(--text-dark); }
+    .sum-row .sum-icon { display: inline-block; width: 1.8em; text-align: center; margin-right: 6px; }
+    .sum-row td:nth-child(2) { font-weight: 700; color: var(--text-dark); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sum-note { text-align: center; width: 100%; max-width: 450px; margin: 8px 0 14px 0; font-size: 0.9em; color: var(--text-dark); }
+
     .summary-text {
       text-align: center;
       width: 100%;
@@ -422,6 +440,10 @@
       <span style="font-weight: 600;">📊 สถิติ 7 วัน</span>
     </div>
 
+    <div class="menu-item" style="background-color: #9b59b6; color: #ffffff;" onclick="showSummary()">
+      <span style="font-weight: 600;">🧮 สรุป</span>
+    </div>
+
     <div id="menu-container">
       <div class="loading" id="menu-loading">กำลังโหลดเมนู...</div>
     </div>
@@ -611,6 +633,8 @@
     function refreshCurrentView() {
       if (currentView === 'latest') {
         showLatestResults();
+      } else if (currentView === 'summary') {
+        showSummary();
       } else if (currentView === 'history') {
         historyCache = null;
         showHistoryResults();
@@ -737,6 +761,92 @@
       latestOutCount = resultOutCount;
       latestRowCount = resultTotalCount;
       refreshResultCount();
+    }
+
+    // ===== สรุปเลข: นับผลที่ออกวันนี้ที่ตรงกับเลขตัวอย่าง รวมเลขสลับตำแหน่ง =====
+    const SUMMARY_GROUPS = [
+      { icon: '🔴', label: '01',      nums: ['012','013','014','015','016','017','018','019'] },
+      { icon: '🟠', label: '0+KK',    nums: ['130','150','170','190','350','370','390','570','590','790'] },
+      { icon: '🟡', label: '1+KK',    nums: ['021','041','061','081','241','261','281','461','481','681'] },
+      { icon: '🟢', label: '0*1+KK',  nums: ['135','137','139','157','159','179','042','062','064','082','084','086'] },
+      { icon: '🔵', label: '92',      nums: ['920','921','923','924','925','926','927','928'] },
+      { icon: '🟣', label: 'คุ All',  nums: ['024','026','028','046','048','068','246','248','268','468'] },
+      { icon: '🟤', label: 'คิ All',  nums: ['135','137','139','157','159','179','357','359','379','579'] }
+    ];
+
+    // เลขสลับตำแหน่ง: เทียบด้วยตัวเลขที่เรียงแล้ว (เช่น 012, 021, 102, 120, 201, 210 ได้คีย์เดียวกัน)
+    const sortKey = n => String(n).split('').sort().join('');
+    SUMMARY_GROUPS.forEach(g => { g.keys = new Set(g.nums.map(sortKey)); });
+
+    function showSummary() {
+      currentView = 'summary';
+      updateButtonVisibility();
+      document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('content-title').textContent = "🧮 สรุป";
+      latestOutCount = null;
+      setResultCount('');
+      document.getElementById('table-container').innerHTML = '';
+      document.getElementById('data-loading').style.display = 'block';
+      setRefreshLoading(true);
+      closeSidebar();
+
+      google.script.run.withSuccessHandler(buildSummary).getLatestResults();
+    }
+
+    function buildSummary(data) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      const container = document.getElementById('table-container');
+      if (currentView !== 'summary') return;
+
+      if (!data || Object.keys(data).length === 0) {
+        container.innerHTML = '<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลผลรางวัลล่าสุด</p>';
+        return;
+      }
+
+      const todayStr = todayStrBKK();
+      const counts = SUMMARY_GROUPS.map(() => 0);
+      const matches = SUMMARY_GROUPS.map(() => []);
+      let outCount = 0;
+
+      Object.keys(data).forEach(cat => {
+        (data[cat] || []).forEach(row => {
+          const val = String(row.value).replace(/\s/g, '');
+          if (val === '' || val === '-') return;
+          if (String(row.date).trim() !== todayStr) return;
+          outCount++;
+          SUMMARY_GROUPS.forEach((g, i) => { if (g.keys.has(sortKey(val))) { counts[i]++; matches[i].push({ num: val, name: String(row.name || cat).trim() }); } });
+        });
+      });
+
+      let rows = '';
+      SUMMARY_GROUPS.forEach((g, i) => {
+        const has = counts[i] > 0;
+        rows += `<tr class="sum-row${has ? ' has-match' : ''}" data-idx="${i}"><td><span class="sum-icon">${g.icon}</span>${g.label}</td><td><span class="sum-count">${counts[i]}</span></td></tr>`;
+      });
+
+      container.innerHTML =
+        `<div class="sum-note">ผลที่ออกแล้ว ${outCount} รายการ</div>` +
+        `<div class="table-wrapper"><table class="sum-table"><thead><tr><th>รายการ</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+      // กดที่แถวที่มีเลขตรง -> แสดง/ซ่อนรายการเลขที่ออก
+      container.querySelectorAll('tr.sum-row.has-match').forEach(tr => {
+        tr.addEventListener('click', () => {
+          const next = tr.nextElementSibling;
+          if (next && next.classList.contains('sum-detail')) {
+            next.remove();
+            tr.classList.remove('open');
+            return;
+          }
+          const list = matches[Number(tr.dataset.idx)];
+          const chips = list.map(m => `<div class="sum-line"><b>${m.num}</b><span>${m.name}</span></div>`).join('');
+          const d = document.createElement('tr');
+          d.className = 'sum-detail';
+          d.innerHTML = `<td colspan="2">${chips}</td>`;
+          tr.after(d);
+          tr.classList.add('open');
+        });
+      });
     }
 
     function showHistoryResults() {
