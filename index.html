@@ -49,8 +49,6 @@
       font-size: 1em; 
       font-weight: 600; 
       flex-shrink: 0;
-      cursor: pointer;
-      user-select: none;
       white-space: nowrap;
     }
 
@@ -410,6 +408,7 @@
         font-size: 0.8em;
       }
       .mobile-header .btn-cal { padding: 5px 9px; }
+      .mobile-header .menu-toggle { padding: 2px 4px; font-size: 1.3em; }
 
       /* ปุ่ม ล่าสุด / 7 วัน / สรุป ย้ายมาอยู่บนแถบด้านบน */
       .nav-btns { display: flex; gap: 5px; }
@@ -488,8 +487,7 @@
 <body>
 
   <div class="mobile-header">
-    <!-- แตะที่ชื่อเพื่อเปิด/ปิดเมนูหมวดหวย -->
-    <div class="brand" onclick="toggleSidebar()">☰ Lotto941</div>
+    <div class="brand">Lotto941</div>
     <div class="header-actions">
       <!-- ปุ่มอัปเดตบนมือถือ -->
       <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
@@ -504,6 +502,7 @@
         <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()">7 วัน</button>
         <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()">สรุป</button>
       </div>
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
   </div>
 
