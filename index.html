@@ -46,9 +46,12 @@
     }
 
     .mobile-header .brand { 
-      font-size: 1.1em; 
+      font-size: 1em; 
       font-weight: 600; 
       flex-shrink: 0;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
     }
 
     .header-actions {
@@ -56,6 +59,27 @@
       align-items: center;
       gap: 6px;
     }
+
+    /* ปุ่มนำทาง (ล่าสุด / สถิติ 7 วัน / สรุป) บนแถบด้านบนของมือถือ */
+    .nav-btns { display: none; }
+    .nav-btn {
+      border: 1px solid rgba(0,0,0,0.12);
+      padding: 5px 9px;
+      border-radius: 16px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 0.8em;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      opacity: 0.75;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:active { transform: scale(0.95); }
+    .nav-btn.nav-latest  { background-color: var(--orange-accent); color: var(--text-dark); }
+    .nav-btn.nav-history { background-color: #3498db; color: #ffffff; }
+    .nav-btn.nav-summary { background-color: #9b59b6; color: #ffffff; }
+    .nav-btn.active { opacity: 1; box-shadow: 0 0 0 2px #ffffff, 0 2px 6px rgba(0,0,0,0.2); }
 
     .menu-toggle {
       background: none; border: none;
@@ -371,20 +395,26 @@
     @media (max-width: 768px) {
       .mobile-header { 
         display: flex; 
-        padding: 0 10px;
+        padding: 0 8px;
       }
 
       .header-actions {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         margin-left: auto;
       }
 
-      /* เพิ่มระยะห่างเว้นขวาเพื่อดันปุ่มอัปเดตไปทางซ้ายให้อยู่ตรงตำแหน่งกรอบสีแดง */
       .mobile-header .btn-update {
-        margin-right: 35px;
+        padding: 5px 9px;
+        font-size: 0.8em;
       }
+      .mobile-header .btn-cal { padding: 5px 9px; }
+
+      /* ปุ่ม ล่าสุด / 7 วัน / สรุป ย้ายมาอยู่บนแถบด้านบน */
+      .nav-btns { display: flex; gap: 5px; }
+      /* ซ่อน 3 รายการนี้ในเมนูด้านข้าง เพราะย้ายขึ้นไปด้านบนแล้ว */
+      .sidebar .nav-main { display: none; }
 
       .sidebar { top: 50px; height: calc(100vh - 50px); transform: translateX(-100%); width: 140px; }
       .sidebar.open { transform: translateX(0); }
@@ -448,25 +478,32 @@
       .desktop-text { display: none; }
       .mobile-text { display: block; }
     }
+
+    /* จอแคบมาก: ซ่อนคำว่า "อัปเดต" เหลือแค่ไอคอน */
+    @media (max-width: 370px) {
+      .mobile-header .btn-update .upd-text { display: none; }
+    }
   </style>
 </head>
 <body>
 
   <div class="mobile-header">
-    <div class="brand">Lotto941</div>
+    <!-- แตะที่ชื่อเพื่อเปิด/ปิดเมนูหมวดหวย -->
+    <div class="brand" onclick="toggleSidebar()">☰ Lotto941</div>
     <div class="header-actions">
       <!-- ปุ่มอัปเดตบนมือถือ -->
       <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
-        <span class="spin-icon">⚡</span> อัปเดต
+        <span class="spin-icon">⚡</span><span class="upd-text">อัปเดต</span>
       </button>
       <span class="cal-wrap">
         <button class="btn-cal" type="button" tabindex="-1"><span>📅</span></button>
         <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
       </span>
-      <button class="btn-refresh" onclick="refreshCurrentView()">
-        <span class="spin-icon">🔄</span>
-      </button>
-      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="nav-btns">
+        <button class="nav-btn nav-latest" data-view="latest" onclick="showLatestResults()">ล่าสุด</button>
+        <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()">7 วัน</button>
+        <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()">สรุป</button>
+      </div>
     </div>
   </div>
 
@@ -475,15 +512,15 @@
   <div class="sidebar" id="sidebar">
     <div class="header">Lotto941</div>
     
-    <div class="menu-item" style="background-color: var(--orange-accent); color: var(--text-dark);" onclick="showLatestResults()">
+    <div class="menu-item nav-main" style="background-color: var(--orange-accent); color: var(--text-dark);" onclick="showLatestResults()">
       <span style="font-weight: 600;">⭐ ล่าสุด</span>
     </div>
 
-    <div class="menu-item" style="background-color: #3498db; color: #ffffff;" onclick="showHistoryResults()">
+    <div class="menu-item nav-main" style="background-color: #3498db; color: #ffffff;" onclick="showHistoryResults()">
       <span style="font-weight: 600;">📊 สถิติ 7 วัน</span>
     </div>
 
-    <div class="menu-item" style="background-color: #9b59b6; color: #ffffff;" onclick="summaryDate = null; showSummary()">
+    <div class="menu-item nav-main" style="background-color: #9b59b6; color: #ffffff;" onclick="summaryDate = null; showSummary()">
       <span style="font-weight: 600;">🧮 สรุป</span>
     </div>
 
@@ -709,6 +746,10 @@
         btn.classList.toggle('has-date', !!summaryDate);
         const lb = btn.querySelector('.cal-label');
         if (lb) lb.textContent = summaryDate ? summaryDate : 'ปฏิทิน';
+      });
+      // ไฮไลต์ปุ่มนำทางของหน้าที่กำลังดูอยู่
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === currentView);
       });
     }
 
