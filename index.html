@@ -776,6 +776,16 @@
       return `${g('day')}/${g('month')}/${g('year')}`;
     }
 
+    // วันที่ของหน้า "สรุป": จะเปลี่ยนเป็นวันใหม่ตอน 02:00 (ไม่ใช่ 00:00)
+    // ช่วง 00:00–01:59 ยังนับเป็นวันก่อนหน้า
+    const SUMMARY_RESET_HOUR = 2;
+    function summaryTodayStrBKK() {
+      const d = new Date(Date.now() - SUMMARY_RESET_HOUR * 60 * 60 * 1000);
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(d);
+      const g = t => parts.find(p => p.type === t).value;
+      return `${g('day')}/${g('month')}/${g('year')}`;
+    }
+
     function showLatestResults() {
       currentView = 'latest';
       updateButtonVisibility();
@@ -953,7 +963,14 @@
       setRefreshLoading(true);
       closeSidebar();
 
-      if (!summaryDate) {
+      if (!summaryDate && summaryTodayStrBKK() !== todayStrBKK()) {
+        // ช่วง 00:00–01:59: ดึงข้อมูลของ "เมื่อวาน" จากสถิติย้อนหลัง
+        // (getLatestResults อาจเปลี่ยนไปเป็นวันใหม่แล้ว ทำให้ข้อมูลเมื่อวานหาย)
+        google.script.run.withSuccessHandler(res => {
+          historyCache = res;
+          buildSummaryLateNight(res);
+        }).get7DaysHistory();
+      } else if (!summaryDate) {
         google.script.run.withSuccessHandler(buildSummary).getLatestResults();
         preloadHistoryForCalendar();
       } else if (historyCache && historyCache.dataByDate) {
@@ -983,7 +1000,7 @@
 
     // ตั้งช่วงวันที่ที่เลือกได้ตอนผู้ใช้แตะช่องเลือกวันที่ (ช่องจริงซ้อนอยู่บนปุ่ม)
     function prepareCalendar(el) {
-      const today = todayStrBKK();
+      const today = summaryTodayStrBKK();
       el.max = isoFromStr(today);
       el.removeAttribute('min');
       if (historyCache && historyCache.dates && historyCache.dates.length && historyCache.dates.every(d => DATE_RE.test(d))) {
@@ -995,7 +1012,7 @@
     function onSummaryDatePicked(v) {
       if (!v) return;
       const s = strFromIso(v);
-      summaryDate = (s === todayStrBKK()) ? null : s;
+      summaryDate = (s === summaryTodayStrBKK()) ? null : s;
       showSummary();
     }
 
@@ -1020,6 +1037,27 @@
       renderSummary(data, null);
     }
 
+    // รายการที่หน้า "ล่าสุด" ไม่ได้แสดง (ตรงกับ excludeList ใน Code.gs) — ตัดออกให้ตัวเลขตรงกัน
+    const SUMMARY_EXCLUDE = new Set(['หุ้นดาวน์โจนส์', 'ดาวน์โจนส์ MIDNIGHT', 'ดาวน์โจนส์ EXTRA', 'ดาวน์โจนส์ TV']);
+
+    function buildSummaryLateNight(res) {
+      setRefreshLoading(false);
+      document.getElementById('data-loading').style.display = 'none';
+      if (currentView !== 'summary') return;
+      const container = document.getElementById('table-container');
+      const day = summaryTodayStrBKK();
+      const src = res && res.dataByDate ? res.dataByDate[day] : null;
+      if (!src || Object.keys(src).length === 0) {
+        container.innerHTML = `<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลของวันที่ ${day}</p>`;
+        return;
+      }
+      const data = {};
+      Object.keys(src).forEach(cat => {
+        data[cat] = (src[cat] || []).filter(r => !SUMMARY_EXCLUDE.has(String(r.name).trim()));
+      });
+      renderSummary(data, null);
+    }
+
     function buildSummary(data) {
       setRefreshLoading(false);
       document.getElementById('data-loading').style.display = 'none';
@@ -1031,7 +1069,7 @@
         return;
       }
 
-      renderSummary(data, todayStrBKK());
+      renderSummary(data, summaryTodayStrBKK());
     }
 
     // filterDate = วันที่ที่ใช้กรองแถว (หน้าวันนี้) / null = ข้อมูลของวันนั้นอยู่แล้ว (ย้อนหลัง)
