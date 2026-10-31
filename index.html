@@ -316,8 +316,21 @@
     .sum-sec .sec-arrow { font-size: 0.8em; }
     .sum-sec .sec-info { font-size: 0.85em; font-weight: 600; color: #8a6d55; }
     .sum-row.in-sec td:first-child { padding-left: 40px !important; }
+    .nl-full { display: none; }
+
     /* วันที่ในหัวข้อสรุป: จอใหญ่ซ่อนไว้ เพราะปุ่มปฏิทินแสดงวันที่อยู่แล้ว */
     @media (min-width: 769px) {
+      /* จอคอม: แถบด้านบน "Lotto941 + ล่าสุด / สถิติ 7 วัน / สรุป" อยู่บรรทัดเดียวกัน */
+      .mobile-header { display: flex; justify-content: flex-start; padding: 0; height: 56px; }
+      .mobile-header .brand { width: 240px; text-align: center; font-size: 1.3em; }
+      .mobile-header .header-actions { margin-left: 20px; }
+      .mobile-header .update-all-btn, .mobile-header .cal-wrap, .mobile-header .menu-toggle { display: none !important; }
+      .nav-btns { display: flex; gap: 10px; }
+      .nav-btn { padding: 8px 18px; font-size: 0.92em; border-radius: 20px; }
+      .nl-full { display: inline; }
+      .sidebar { top: 56px; height: calc(100vh - 56px); }
+      .sidebar .header, .sidebar .nav-main { display: none; }
+      .content { padding-top: 76px; }
       .title-date { display: none; }
       .view-summary .content-header-container,
       .view-summary .table-wrapper { max-width: 560px; }
@@ -523,9 +536,9 @@
         <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
       </span>
       <div class="nav-btns">
-        <button class="nav-btn nav-latest" data-view="latest" onclick="showLatestResults()">ล่าสุด</button>
-        <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()">7 วัน</button>
-        <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()">สรุป</button>
+        <button class="nav-btn nav-latest" data-view="latest" onclick="showLatestResults()"><span class="nl-full">⭐ </span>ล่าสุด</button>
+        <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()"><span class="nl-full">📊 สถิติ </span>7 วัน</button>
+        <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()"><span class="nl-full">🧮 </span>สรุป</button>
       </div>
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
