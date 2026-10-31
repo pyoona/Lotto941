@@ -325,10 +325,19 @@
       .mobile-header { display: flex; justify-content: flex-start; padding: 0; height: 56px; }
       .mobile-header .brand { width: 240px; text-align: center; font-size: 1.3em; }
       .mobile-header .header-actions { margin-left: 20px; }
-      .mobile-header .update-all-btn, .mobile-header .cal-wrap, .mobile-header .menu-toggle { display: none !important; }
+      .mobile-header .cal-wrap, .mobile-header .menu-toggle { display: none !important; }
+      /* ปุ่มอัปเดต: ย้ายขึ้นไปแถบด้านบน ต่อจาก Lotto941 */
+      .desktop-action-buttons .update-all-btn { display: none !important; }
+      .mobile-header .btn-update { padding: 7px 16px; font-size: 0.9em; margin-right: 6px; display: inline-flex !important; }
       .nav-btns { display: flex; gap: 10px; }
       .nav-btn { padding: 8px 18px; font-size: 0.92em; border-radius: 20px; }
       .nl-full { display: inline; }
+      /* สถิติ 7 วัน: เรียงตารางหลายคอลัมน์ให้เต็มพื้นที่ */
+      .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 0 20px; align-items: start; width: 100%; }
+      .tables-grid .table-wrapper { width: 100%; max-width: none; margin: 0 0 15px 0; }
+      /* (เบิ้ล/ตอง) อยู่บรรทัดเดียวกับหัวข้อ เหมือนบนมือถือ */
+      .summary-text { display: none; }
+      .dup-count:not(:empty) { display: inline; font-size: 0.95em; }
       .sidebar { top: 56px; height: calc(100vh - 56px); }
       .sidebar .header, .sidebar .nav-main { display: none; }
       .content { padding-top: 76px; }
@@ -538,7 +547,7 @@
     <div class="header-actions">
       <!-- ปุ่มอัปเดตบนมือถือ -->
       <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
-        <span class="spin-icon">⚡</span><span class="upd-text">อัปเดต</span>
+        <span class="spin-icon">⚡</span><span class="upd-text">อัปเดต<span class="nl-full">ข้อมูล</span></span>
       </button>
       <span class="cal-wrap">
         <button class="btn-cal" type="button" tabindex="-1"><span>📅</span></button>
@@ -774,11 +783,8 @@
     function updateButtonVisibility() {
       const updateBtns = document.querySelectorAll('.update-all-btn');
       updateBtns.forEach(btn => {
-        if (currentView === 'latest') {
-          btn.style.display = 'inline-flex';
-        } else {
-          btn.style.display = 'none';
-        }
+        // ปุ่มอัปเดตแสดงทุกหน้า
+        btn.style.display = 'inline-flex';
       });
       // ปุ่มปฏิทิน: แสดงเฉพาะหน้า "สรุป"
       document.querySelectorAll('.cal-wrap').forEach(w => {
@@ -1374,7 +1380,7 @@
                        </div>`;
       }
 
-      container.innerHTML = tabsHtml + summaryHtml + htmlTables;
+      container.innerHTML = tabsHtml + summaryHtml + `<div class="tables-grid">${htmlTables}</div>`;
       setDupCount(dailyDuplicateCount);
     }
 
