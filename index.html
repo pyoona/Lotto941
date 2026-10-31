@@ -286,6 +286,9 @@
       box-shadow: 0 2px 6px rgba(52, 152, 219, 0.35);
     }
 
+    .dup-count { display: none; font-weight: 700; font-size: calc(0.95em - 1px); color: var(--red-color); white-space: nowrap; }
+    .dup-count.none { color: var(--text-dark); }
+
     .result-count {
       font-weight: 700; font-size: 0.95em;
       color: var(--text-dark);
@@ -313,6 +316,12 @@
     .sum-sec .sec-arrow { font-size: 0.8em; }
     .sum-sec .sec-info { font-size: 0.85em; font-weight: 600; color: #8a6d55; }
     .sum-row.in-sec td:first-child { padding-left: 40px !important; }
+    /* วันที่ในหัวข้อสรุป: จอใหญ่ซ่อนไว้ เพราะปุ่มปฏิทินแสดงวันที่อยู่แล้ว */
+    @media (min-width: 769px) {
+      .title-date { display: none; }
+      .view-summary .content-header-container,
+      .view-summary .table-wrapper { max-width: 560px; }
+    }
     .sum-dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.35); vertical-align: -2px; }
     .sum-row td:nth-child(2) { font-weight: 700; color: var(--text-dark); white-space: nowrap; font-variant-numeric: tabular-nums; }
     .sum-note { text-align: center; width: 100%; max-width: 450px; margin: 8px 0 14px 0; font-size: 0.9em; color: var(--text-dark); }
@@ -429,7 +438,10 @@
       .sidebar.open { transform: translateX(0); }
       .sidebar .header { display: none; }
       .content { margin-left: 0; width: 100%; padding: 55px 10px 15px 10px; display: flex; flex-direction: column; align-items: center; }
-      .content-header-container { max-width: 100%; justify-content: center; }
+      /* หัวข้อ + จำนวนผล: ชิดซ้าย และตัวอักษรเล็กลง 2px */
+      .content-header-container { max-width: 100%; justify-content: flex-start; }
+      .content-header-container h2 { font-size: calc(1.2em - 2px); }
+      .content-header-container .result-count { font-size: calc(0.95em - 2px); }
       .desktop-action-buttons { display: none !important; }
       .table-wrapper { max-width: 100%; margin: 15px auto; }
       
@@ -483,7 +495,10 @@
         border-radius: 50%;
         font-size: 0.95em;
       }
-      .summary-text { max-width: 100%; text-align: center; margin: 10px auto 15px auto; }
+      /* (เบิ้ล/ตอง): ย้ายขึ้นไปอยู่บรรทัดเดียวกับหัวข้อ */
+      .summary-text { display: none; }
+      .dup-count:not(:empty) { display: inline; }
+      .content-header-container { margin-bottom: 4px; gap: 8px; }
       .desktop-text { display: none; }
       .mobile-text { display: block; }
     }
@@ -545,6 +560,7 @@
     <div class="content-header-container">
       <h2 id="content-title">⭐ ล่าสุด</h2>
       <span id="result-count" class="result-count"></span>
+      <span id="dup-count" class="dup-count"></span>
       <div class="action-buttons desktop-action-buttons">
         <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
           <span class="spin-icon">⚡</span> อัปเดตข้อมูล
@@ -553,9 +569,6 @@
           <button class="btn-cal" type="button" tabindex="-1"><span>📅</span> <span class="cal-label">ปฏิทิน</span></button>
           <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
         </span>
-        <button class="btn-refresh" onclick="refreshCurrentView()">
-          <span class="spin-icon">🔄</span> Refresh
-        </button>
       </div>
     </div>
     
@@ -702,10 +715,7 @@
     }
 
     function executeUpdateAll() {
-      if (!confirm("คุณต้องการรันสคริปต์อัปเดตข้อมูลทั้งหมดใช่หรือไม่?")) {
-        return;
-      }
-      
+      // กดแล้วอัปเดตทันที ไม่ต้องยืนยัน (ปุ่มถูกปิดไว้ระหว่างอัปเดต กันกดซ้ำ)
       setUpdateLoading(true);
       document.getElementById('data-loading').style.display = 'block';
       document.getElementById('data-loading').textContent = 'กำลังรันสคริปต์อัปเดตข้อมูล กรุณารอสักครู่...';
@@ -756,6 +766,7 @@
         const lb = btn.querySelector('.cal-label');
         if (lb) lb.textContent = summaryDate ? summaryDate : 'ปฏิทิน';
       });
+      document.body.classList.toggle('view-summary', currentView === 'summary');
       // ไฮไลต์ปุ่มนำทางของหน้าที่กำลังดูอยู่
       document.querySelectorAll('.nav-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.view === currentView);
@@ -775,6 +786,16 @@
     function setResultCount(text) {
       const el = document.getElementById('result-count');
       if (el) el.textContent = text || '';
+      if (!text) setDupCount(null);
+    }
+
+    // จำนวนเบิ้ล/ตอง แสดงบรรทัดเดียวกับหัวข้อ (บนมือถือ) — null = ซ่อน
+    function setDupCount(n) {
+      const el = document.getElementById('dup-count');
+      if (!el) return;
+      if (n === null) { el.textContent = ''; el.classList.remove('none'); return; }
+      el.textContent = n > 0 ? `(เบิ้ล/ตอง) ${n} รายการ` : 'ไม่พบเลขซ้ำ';
+      el.classList.toggle('none', n === 0);
     }
 
     function todayStrBKK() {
@@ -876,6 +897,7 @@
       }
       
       container.innerHTML = summaryHtml + htmlTables;
+      setDupCount(totalDuplicateCount);
       latestOutCount = resultOutCount;
       latestRowCount = resultTotalCount;
       refreshResultCount();
@@ -894,6 +916,10 @@
       { color: '#f06292', label: '38+58',   nums: ['380','381','382','384','385','386','387','389','580','581','582','584','586','587','589'] },
       { color: '#ad1457', label: '456789',  nums: ['465','475','476','485','486','487','495','496','497','498'] },
       { color: '#009688', label: '25+27',   nums: ['250','251','253','254','256','257','258','259','270','271','273','274','275','276','278','279'] },
+      // 02468+KK: คู่ 1 ตัว + คี่ 2 ตัว (ไม่ซ้ำกัน) นับแบบสลับตำแหน่ง
+      { color: '#ff7043', label: '02468+KK', nums: ['013','015','017','019','035','037','039','057','059','079','213','215','217','219','235','237','239','257','259','279','413','415','417','419','435','437','439','457','459','479','613','615','617','619','635','637','639','657','659','679','813','815','817','819','835','837','839','857','859','879'] },
+      // 13579+KK: คี่ 1 ตัว + คู่ 2 ตัว (ไม่ซ้ำกัน) นับแบบสลับตำแหน่ง
+      { color: '#26a69a', label: '13579+KK', nums: ['102','104','106','108','124','126','128','146','148','168','302','304','306','308','324','326','328','346','348','368','502','504','506','508','524','526','528','546','548','568','702','704','706','708','724','726','728','746','748','768','902','904','906','908','924','926','928','946','948','968'] },
       { color: '#cddc39', label: 'DB คิ All', section: 'DB', nums: ['311','511','711','911','133','533','733','933','155','355','755','955','177','377','577','977','199','399','599','799'] },
       { color: '#1a237e', label: 'DB คุ All', section: 'DB', nums: ['200','400','600','800','022','422','622','822','044','244','644','844','066','266','466','866','088','288','488','688'] },
       { color: '#9e9e9e', label: 'DB Mix', section: 'DB',  nums: ['100','300','500','700','900','011','211','411','611','811','122','322','522','722','922',
@@ -995,7 +1021,7 @@
       currentView = 'summary';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('content-title').textContent = "🧮 สรุป" + (summaryDate ? ' ' + summaryDate : '');
+      document.getElementById('content-title').innerHTML = "🧮 สรุป" + (summaryDate ? `<span class="title-date"> ${summaryDate}</span>` : '');
       latestOutCount = null;
       setResultCount('');
       document.getElementById('table-container').innerHTML = '';
@@ -1148,8 +1174,12 @@
       });
 
       container.innerHTML =
-        `<div class="sum-note">${summaryDate ? `ผลวันที่ ${summaryDate} ทั้งหมด ${outCount} รายการ<button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>` : `ผลที่ออกแล้ว ${outCount} รายการ`}</div>` +
         `<div class="table-wrapper"><table class="sum-table"><thead><tr><th>รายการ</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+      // จำนวนผลที่ออก แสดงบรรทัดเดียวกับหัวข้อ "สรุป"
+      document.getElementById('result-count').innerHTML = summaryDate
+        ? `${outCount} รายการ <button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>`
+        : `ผลที่ออกแล้ว ${outCount} รายการ`;
 
       // กดหัวกลุ่ม -> ขยาย/ย่อรายการในกลุ่ม
       container.querySelectorAll('tr.sum-sec').forEach(h => {
@@ -1316,6 +1346,7 @@
       }
 
       container.innerHTML = tabsHtml + summaryHtml + htmlTables;
+      setDupCount(dailyDuplicateCount);
     }
 
     function switchHistoryDate(dStr) {
