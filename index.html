@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lotto941</title>
   <!-- ไอคอนของเว็บ (แสดงในรายการโปรด / แท็บ / หน้าจอหลัก) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2327ae60'/%3E%3Ctext x='32' y='32' font-family='Arial,sans-serif' font-size='46' font-weight='bold' fill='%23ffffff' text-anchor='middle' dominant-baseline='central' transform='rotate(90 32 32)'%3EP%3C/text%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2327ae60'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.6'%3E%3Cpath d='M18,53 V14 H34 A12,12 0 0 1 34,38 H30'/%3E%3Cpath d='M22,53 V18 H34 A8,8 0 0 1 34,34 H30'/%3E%3Cpath d='M26,53 V22 H34 A4,4 0 0 1 34,30 H26'/%3E%3C/g%3E%3Ccircle cx='22' cy='8' r='2.6' fill='%23ffffff'/%3E%3C/svg%3E">
   <meta name="theme-color" content="#a8e6cf">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -286,9 +286,6 @@
       box-shadow: 0 2px 6px rgba(52, 152, 219, 0.35);
     }
 
-    .dup-count { display: none; font-weight: 700; font-size: calc(0.95em - 1px); color: var(--red-color); white-space: nowrap; }
-    .dup-count.none { color: var(--text-dark); }
-
     .result-count {
       font-weight: 700; font-size: 0.95em;
       color: var(--text-dark);
@@ -310,50 +307,6 @@
     .sum-line b { grid-column: 2; text-align: center; font-size: 1.05em; letter-spacing: 1px; color: var(--text-dark); font-variant-numeric: tabular-nums; }
     .sum-line span { grid-column: 3; text-align: center; font-size: 1em; font-weight: 600; color: var(--text-dark); }
     .sum-row .sum-icon { display: inline-block; width: 1.8em; text-align: center; margin-right: 6px; }
-    .sum-table tr.sum-sec { cursor: pointer; background-color: #fdf1e7; }
-    .sum-sec td { font-weight: 700; font-size: 1.05em; color: var(--text-dark); }
-    .sum-table tr.sum-sec:hover, .sum-table tr.sum-sec.open { background-color: #fbe3cf; }
-    .sum-sec .sec-arrow { font-size: 0.8em; }
-    .sum-sec .sec-info { font-size: 0.85em; font-weight: 600; color: #8a6d55; }
-    .sum-row.in-sec td:first-child { padding-left: 40px !important; }
-    .nl-full { display: none; }
-    .sum-desktop { display: none; }
-
-    /* วันที่ในหัวข้อสรุป: จอใหญ่ซ่อนไว้ เพราะปุ่มปฏิทินแสดงวันที่อยู่แล้ว */
-    @media (min-width: 769px) {
-      /* จอคอม: แถบด้านบน "Lotto941 + ล่าสุด / สถิติ 7 วัน / สรุป" อยู่บรรทัดเดียวกัน */
-      .mobile-header { display: flex; justify-content: flex-start; padding: 0; height: 56px; }
-      .mobile-header .brand { width: 240px; text-align: center; font-size: 1.3em; }
-      .mobile-header .header-actions { margin-left: 20px; }
-      .mobile-header .cal-wrap, .mobile-header .menu-toggle { display: none !important; }
-      /* ปุ่มอัปเดต: ย้ายขึ้นไปแถบด้านบน ต่อจาก Lotto941 */
-      .desktop-action-buttons .update-all-btn { display: none !important; }
-      .mobile-header .btn-update { padding: 7px 16px; font-size: 0.9em; margin-right: 6px; display: inline-flex !important; }
-      .nav-btns { display: flex; gap: 10px; }
-      .nav-btn { padding: 8px 18px; font-size: 0.92em; border-radius: 20px; }
-      .nl-full { display: inline; }
-      /* ล่าสุด / สถิติ 7 วัน: เรียงตารางหลายคอลัมน์ให้เต็มพื้นที่ */
-      .tables-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 0 20px; align-items: start; width: 100%; }
-      .tables-grid .table-wrapper { width: 100%; max-width: none; margin: 0 0 15px 0; }
-      /* (เบิ้ล/ตอง) อยู่บรรทัดเดียวกับหัวข้อ เหมือนบนมือถือ */
-      .summary-text { display: none; }
-      .dup-count:not(:empty) { display: inline; font-size: 0.95em; }
-      .sidebar { top: 56px; height: calc(100vh - 56px); }
-      .sidebar .header, .sidebar .nav-main { display: none; }
-      .content { padding-top: 76px; }
-      .title-date { display: none; }
-      .view-summary .content-header-container,
-      .view-summary .table-wrapper { max-width: 560px; }
-      /* สรุปบนจอคอม: 3 ตารางเรียงกันในแนวนอน */
-      .sum-mobile { display: none; }
-      .sum-desktop { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 24px; }
-      .sum-desktop .table-wrapper { margin-top: 10px; }
-      .sum-desktop .sum-main { flex: 0 1 560px; }
-      .view-summary .sum-desktop .sum-side { flex: 0 0 300px; max-width: 300px; }
-      .sum-side .sum-table th:nth-child(1), .sum-side .sum-table td:nth-child(1) { width: 68%; padding-left: 18px !important; }
-      .sum-side .sum-table th:nth-child(2), .sum-side .sum-table td:nth-child(2) { width: 32%; }
-    }
-    .sum-dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.18); vertical-align: -2px; }
     .sum-row td:nth-child(2) { font-weight: 700; color: var(--text-dark); white-space: nowrap; font-variant-numeric: tabular-nums; }
     .sum-note { text-align: center; width: 100%; max-width: 450px; margin: 8px 0 14px 0; font-size: 0.9em; color: var(--text-dark); }
 
@@ -469,10 +422,7 @@
       .sidebar.open { transform: translateX(0); }
       .sidebar .header { display: none; }
       .content { margin-left: 0; width: 100%; padding: 55px 10px 15px 10px; display: flex; flex-direction: column; align-items: center; }
-      /* หัวข้อ + จำนวนผล: ชิดซ้าย และตัวอักษรเล็กลง 2px */
-      .content-header-container { max-width: 100%; justify-content: flex-start; }
-      .content-header-container h2 { font-size: calc(1.2em - 2px); }
-      .content-header-container .result-count { font-size: calc(0.95em - 2px); }
+      .content-header-container { max-width: 100%; justify-content: center; }
       .desktop-action-buttons { display: none !important; }
       .table-wrapper { max-width: 100%; margin: 15px auto; }
       
@@ -526,10 +476,7 @@
         border-radius: 50%;
         font-size: 0.95em;
       }
-      /* (เบิ้ล/ตอง): ย้ายขึ้นไปอยู่บรรทัดเดียวกับหัวข้อ */
-      .summary-text { display: none; }
-      .dup-count:not(:empty) { display: inline; }
-      .content-header-container { margin-bottom: 4px; gap: 8px; }
+      .summary-text { max-width: 100%; text-align: center; margin: 10px auto 15px auto; }
       .desktop-text { display: none; }
       .mobile-text { display: block; }
     }
@@ -547,16 +494,16 @@
     <div class="header-actions">
       <!-- ปุ่มอัปเดตบนมือถือ -->
       <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
-        <span class="spin-icon">⚡</span><span class="upd-text">อัปเดต<span class="nl-full">ข้อมูล</span></span>
+        <span class="spin-icon">⚡</span><span class="upd-text">อัปเดต</span>
       </button>
       <span class="cal-wrap">
         <button class="btn-cal" type="button" tabindex="-1"><span>📅</span></button>
         <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
       </span>
       <div class="nav-btns">
-        <button class="nav-btn nav-latest" data-view="latest" onclick="showLatestResults()"><span class="nl-full">⭐ </span>ล่าสุด</button>
-        <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()"><span class="nl-full">📊 สถิติ </span>7 วัน</button>
-        <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()"><span class="nl-full">🧮 </span>สรุป</button>
+        <button class="nav-btn nav-latest" data-view="latest" onclick="showLatestResults()">ล่าสุด</button>
+        <button class="nav-btn nav-history" data-view="history" onclick="showHistoryResults()">7 วัน</button>
+        <button class="nav-btn nav-summary" data-view="summary" onclick="summaryDate = null; showSummary()">สรุป</button>
       </div>
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
@@ -591,7 +538,6 @@
     <div class="content-header-container">
       <h2 id="content-title">⭐ ล่าสุด</h2>
       <span id="result-count" class="result-count"></span>
-      <span id="dup-count" class="dup-count"></span>
       <div class="action-buttons desktop-action-buttons">
         <button class="btn-update update-all-btn" onclick="executeUpdateAll()">
           <span class="spin-icon">⚡</span> อัปเดตข้อมูล
@@ -600,6 +546,9 @@
           <button class="btn-cal" type="button" tabindex="-1"><span>📅</span> <span class="cal-label">ปฏิทิน</span></button>
           <input type="date" class="cal-input" title="เลือกวันที่" onfocus="prepareCalendar(this)" onclick="prepareCalendar(this)" onchange="onSummaryDatePicked(this.value)">
         </span>
+        <button class="btn-refresh" onclick="refreshCurrentView()">
+          <span class="spin-icon">🔄</span> Refresh
+        </button>
       </div>
     </div>
     
@@ -746,7 +695,10 @@
     }
 
     function executeUpdateAll() {
-      // กดแล้วอัปเดตทันที ไม่ต้องยืนยัน (ปุ่มถูกปิดไว้ระหว่างอัปเดต กันกดซ้ำ)
+      if (!confirm("คุณต้องการรันสคริปต์อัปเดตข้อมูลทั้งหมดใช่หรือไม่?")) {
+        return;
+      }
+      
       setUpdateLoading(true);
       document.getElementById('data-loading').style.display = 'block';
       document.getElementById('data-loading').textContent = 'กำลังรันสคริปต์อัปเดตข้อมูล กรุณารอสักครู่...';
@@ -783,8 +735,11 @@
     function updateButtonVisibility() {
       const updateBtns = document.querySelectorAll('.update-all-btn');
       updateBtns.forEach(btn => {
-        // ปุ่มอัปเดตแสดงทุกหน้า
-        btn.style.display = 'inline-flex';
+        if (currentView === 'latest') {
+          btn.style.display = 'inline-flex';
+        } else {
+          btn.style.display = 'none';
+        }
       });
       // ปุ่มปฏิทิน: แสดงเฉพาะหน้า "สรุป"
       document.querySelectorAll('.cal-wrap').forEach(w => {
@@ -794,7 +749,6 @@
         const lb = btn.querySelector('.cal-label');
         if (lb) lb.textContent = summaryDate ? summaryDate : 'ปฏิทิน';
       });
-      document.body.classList.toggle('view-summary', currentView === 'summary');
       // ไฮไลต์ปุ่มนำทางของหน้าที่กำลังดูอยู่
       document.querySelectorAll('.nav-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.view === currentView);
@@ -814,30 +768,10 @@
     function setResultCount(text) {
       const el = document.getElementById('result-count');
       if (el) el.textContent = text || '';
-      if (!text) setDupCount(null);
-    }
-
-    // จำนวนเบิ้ล/ตอง แสดงบรรทัดเดียวกับหัวข้อ (บนมือถือ) — null = ซ่อน
-    function setDupCount(n) {
-      const el = document.getElementById('dup-count');
-      if (!el) return;
-      if (n === null) { el.textContent = ''; el.classList.remove('none'); return; }
-      el.textContent = n > 0 ? `(เบิ้ล/ตอง) ${n} รายการ` : 'ไม่พบเลขซ้ำ';
-      el.classList.toggle('none', n === 0);
     }
 
     function todayStrBKK() {
       const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(new Date());
-      const g = t => parts.find(p => p.type === t).value;
-      return `${g('day')}/${g('month')}/${g('year')}`;
-    }
-
-    // วันที่ของหน้า "สรุป": จะเปลี่ยนเป็นวันใหม่ตอน 02:00 (ไม่ใช่ 00:00)
-    // ช่วง 00:00–01:59 ยังนับเป็นวันก่อนหน้า
-    const SUMMARY_RESET_HOUR = 2;
-    function summaryTodayStrBKK() {
-      const d = new Date(Date.now() - SUMMARY_RESET_HOUR * 60 * 60 * 1000);
-      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(d);
       const g = t => parts.find(p => p.type === t).value;
       return `${g('day')}/${g('month')}/${g('year')}`;
     }
@@ -924,8 +858,7 @@
         summaryHtml = `<div class="summary-text" style="color: var(--text-dark);">ไม่พบเลขซ้ำ</div>`;
       }
       
-      container.innerHTML = summaryHtml + `<div class="tables-grid">${htmlTables}</div>`;
-      setDupCount(totalDuplicateCount);
+      container.innerHTML = summaryHtml + htmlTables;
       latestOutCount = resultOutCount;
       latestRowCount = resultTotalCount;
       refreshResultCount();
@@ -933,54 +866,25 @@
 
     // ===== สรุปเลข: นับผลที่ออกวันนี้ที่ตรงกับเลขตัวอย่าง รวมเลขสลับตำแหน่ง =====
     const SUMMARY_GROUPS = [
-      { color: '#ff1a1a', label: '01',      nums: ['012','013','014','015','016','017','018','019'] },
-      { color: '#ff8c00', label: '0+KK',    nums: ['130','150','170','190','350','370','390','570','590','790'] },
-      { color: '#ffd500', label: '1+KK',    nums: ['021','041','061','081','241','261','281','461','481','681'] },
-      { color: '#00c853', label: '0*1+KK',  nums: ['135','137','139','157','159','179','042','062','064','082','084','086'] },
-      { color: '#0066ff', label: '92',      nums: ['920','921','923','924','925','926','927','928'] },
-      { color: '#9b30ff', label: 'คุ All',  nums: ['024','026','028','046','048','068','246','248','268','468'] },
-      { color: '#c46a00', label: 'คิ All',  nums: ['135','137','139','157','159','179','357','359','379','579'] },
-      { color: '#00e5ff', label: '18+19',   nums: ['810','812','813','814','815','816','817','819','910','912','913','914','915','916','917'] },
-      { color: '#ff2d95', label: '38+58',   nums: ['380','381','382','384','385','386','387','389','580','581','582','584','586','587','589'] },
-      { color: '#00bfa5', label: '25+27',   nums: ['250','251','253','254','256','257','258','259','270','271','273','274','275','276','278','279'] },
-      { color: '#d500f9', label: '456789',  nums: ['465','475','476','485','486','487','495','496','497','498'] },
-      // 02468+KK: คู่ 1 ตัว + คี่ 2 ตัว (ไม่ซ้ำกัน) นับแบบสลับตำแหน่ง
-      { color: '#76ff03', label: '02468+KK', nums: ['013','015','017','019','035','037','039','057','059','079','213','215','217','219','235','237','239','257','259','279','413','415','417','419','435','437','439','457','459','479','613','615','617','619','635','637','639','657','659','679','813','815','817','819','835','837','839','857','859','879'] },
-      // 13579+KK: คี่ 1 ตัว + คู่ 2 ตัว (ไม่ซ้ำกัน) นับแบบสลับตำแหน่ง
-      { color: '#3d5afe', label: '13579+KK', nums: ['102','104','106','108','124','126','128','146','148','168','302','304','306','308','324','326','328','346','348','368','502','504','506','508','524','526','528','546','548','568','702','704','706','708','724','726','728','746','748','768','902','904','906','908','924','926','928','946','948','968'] },
-      { color: '#aeea00', label: 'DB คิ All', section: 'DB', nums: ['311','511','711','911','133','533','733','933','155','355','755','955','177','377','577','977','199','399','599','799'] },
-      { color: '#2962ff', label: 'DB คุ All', section: 'DB', nums: ['200','400','600','800','022','422','622','822','044','244','644','844','066','266','466','866','088','288','488','688'] },
-      { color: '#ff6d00', label: 'DB Mix', section: 'DB',  nums: ['100','300','500','700','900','011','211','411','611','811','122','322','522','722','922',
-                                             '033','233','433','633','833','144','344','544','744','944','055','255','455','655','855',
-                                             '166','366','566','766','966','077','277','477','677','877','188','388','588','788','988',
-                                             '099','299','499','699','899'] },
-      // DB -BB: เทียบแบบตรงตัว ไม่สลับตำแหน่ง (รูปแบบ ABB เช่น 100, 211, 988)
-      { color: '#00b0ff', label: 'DB -BB', section: 'DB',  exact: true, nums: (() => {
-          const a = [];
-          for (let b = 0; b <= 9; b++) for (let f = 0; f <= 9; f++) if (f !== b) a.push(`${f}${b}${b}`);
-          return a;
-        })() },
-      // กลุ่ม 2 บน: เทียบเฉพาะ 2 ตัวหลังของผล (ตรงตัว)
-      { color: '#304ffe', label: '2 บน**0+1', section: '2 บน', last2: true, nums: ['01','02','03','04','05','06','07','08','09','10','12','13','14','15','16','17','18','19','20','21','30','31','40','41','50','51','60','61','70','71','80','81','90','91'] },
-      { color: '#ff1744', label: '2 บน**234', section: '2 บน', last2: true, nums: ['23','24','25','26','27','28','29','32','34','35','36','37','38','39','42','43','45','46','47','48','49','52','53','54','62','63','64','72','73','74','82','83','84','92','93','94'] },
-      { color: '#64dd17', label: '2 บน**56789', section: '2 บน', last2: true, nums: ['56','57','58','59','65','67','68','69','75','76','78','79','85','86','87','89','95','96','97','98'] },
-      { color: '#aa00ff', label: '2 บน**คุ', section: '2 บน', last2: true, nums: ['02','04','06','08','20','24','26','28','40','42','46','48','60','62','64','68','80','82','84','86'] },
-      { color: '#ff9100', label: '2 บน**คิ', section: '2 บน', last2: true, nums: ['13','15','17','19','31','35','37','39','51','53','57','59','71','73','75','79','91','93','95','97'] },
-      { color: '#00e676', label: '2 บน**Mix', section: '2 บน', last2: true, nums: ['01','03','05','07','09','10','12','14','16','18','21','23','25','27','29','30','32','34','36','38','41','43','45','47','49','50','52','54','56','58','61','63','65','67','69','70','72','74','76','78','81','83','85','87','89','90','92','94','96','98'] }
+      { icon: '🔴', label: '01',      nums: ['012','013','014','015','016','017','018','019'] },
+      { icon: '🟠', label: '0+KK',    nums: ['130','150','170','190','350','370','390','570','590','790'] },
+      { icon: '🟡', label: '1+KK',    nums: ['021','041','061','081','241','261','281','461','481','681'] },
+      { icon: '🟢', label: '0*1+KK',  nums: ['135','137','139','157','159','179','042','062','064','082','084','086'] },
+      { icon: '🔵', label: '92',      nums: ['920','921','923','924','925','926','927','928'] },
+      { icon: '🟣', label: 'คุ All',  nums: ['024','026','028','046','048','068','246','248','268','468'] },
+      { icon: '🟤', label: 'คิ All',  nums: ['135','137','139','157','159','179','357','359','379','579'] },
+      { icon: '⚫', label: '18+19',   nums: ['810','812','813','814','815','816','817','819','910','912','913','914','915','916','917'] },
+      { icon: '⚪', label: '38+58',   nums: ['380','381','382','384','385','386','387','389','580','581','582','584','586','587','589'] }
     ];
 
     // เลขสลับตำแหน่ง: เทียบด้วยตัวเลขที่เรียงแล้ว (เช่น 012, 021, 102, 120, 201, 210 ได้คีย์เดียวกัน)
-    // กลุ่มที่มี exact: true จะเทียบแบบตรงตัว ไม่สลับตำแหน่ง
     const sortKey = n => String(n).split('').sort().join('');
-    SUMMARY_GROUPS.forEach(g => { g.keys = new Set((g.exact || g.last2) ? g.nums : g.nums.map(sortKey)); });
-    const groupMatch = (g, val) => g.last2 ? (val.length >= 2 && g.keys.has(val.slice(-2)))
-                                 : g.exact ? g.keys.has(val) : g.keys.has(sortKey(val));
+    SUMMARY_GROUPS.forEach(g => { g.keys = new Set(g.nums.map(sortKey)); });
 
     // ===== ลำดับออกผล: เรียงตามเวลาออกผล (ออกก่อนอยู่บน) =====
     // ใส่เป็น [เวลา, [ชื่อที่เรียกได้หลายแบบ]] — ชื่อจะถูกตัดช่องว่าง วงเล็บ - * และคำว่า "หวย" ออกก่อนเทียบ
     // เวลาก่อน 05:00 ถือเป็นของวันถัดไป (เช่น ดาวน์โจนส์) จึงไปอยู่ท้ายสุด
-    const normName = n => String(n).toLowerCase().replace(/[\s()\-*]+/g, '').replace(/หวย|ปิด/g, '')
-      .replace(/[ก-ฮ]์/g, '').replace(/์/g, '');   // ตัดตัวการันต์ เช่น จันทร์ / จันทน์ / จันท์ ได้ค่าเดียวกัน
+    const normName = n => String(n).toLowerCase().replace(/[\s()\-*]+/g, '').replace(/หวย|ปิด/g, '');
     const DRAW_TABLE = [
       // ลาว
       ['05:40', ['ลาวประตูชัย']], ['06:40', ['ลาวสันติภาพ']], ['07:40', ['ประชาชนลาว']],
@@ -1011,7 +915,7 @@
       ['22:20', ['เยอรมัน VIP']], ['23:20', ['รัสเซีย VIP']],
       ['00:00', ['ดาวน์โจนส์ VIP', 'ดาวโจนส์ VIP']],
       // VISA
-      ['05:05', ['สาละวัน VISA']], ['06:05', ['หลวงพระบาง VISA']], ['07:05', ['เวียงจันทน์ VISA', 'เวียงจันทร์ VISA', 'เวียงจันท์ VISA']],
+      ['05:05', ['สาละวัน VISA']], ['06:05', ['หลวงพระบาง VISA']], ['07:05', ['เวียงจันทน์ VISA']],
       ['08:05', ['ลาว VISA']], ['09:05', ['นิเคอิ VISA เช้า']], ['10:05', ['จีน VISA เช้า']],
       ['11:05', ['ฮั่งเส็ง VISA เช้า']], ['12:05', ['ฮ่องกง VISA']], ['13:05', ['นิเคอิ VISA บ่าย']],
       ['14:05', ['จีน VISA บ่าย']], ['15:05', ['ฮั่งเส็ง VISA บ่าย']], ['15:45', ['ฮานอย VISA']],
@@ -1033,15 +937,7 @@
       });
     });
     function drawOrder(name) {
-      const k = normName(name);
-      let v = drawTimeMap.get(k);
-      if (v === undefined) {
-        // ชื่อสะกดต่างจากตารางเล็กน้อย: ลองหาชื่อในตารางที่ยาวที่สุดที่อยู่ในชื่อนี้ หรือชื่อนี้อยู่ในชื่อในตาราง
-        let best = '';
-        drawTimeMap.forEach((t, key) => {
-          if ((k.includes(key) || key.includes(k)) && key.length > best.length) { best = key; v = t; }
-        });
-      }
+      const v = drawTimeMap.get(normName(name));
       return v === undefined ? 99999 : v; // ไม่อยู่ในตาราง -> ไว้ท้ายสุด
     }
 
@@ -1049,7 +945,7 @@
       currentView = 'summary';
       updateButtonVisibility();
       document.querySelectorAll('.sub-menu-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('content-title').innerHTML = "🧮 สรุป" + (summaryDate ? `<span class="title-date"> ${summaryDate}</span>` : '');
+      document.getElementById('content-title').textContent = "🧮 สรุป" + (summaryDate ? ' ' + summaryDate : '');
       latestOutCount = null;
       setResultCount('');
       document.getElementById('table-container').innerHTML = '';
@@ -1057,14 +953,7 @@
       setRefreshLoading(true);
       closeSidebar();
 
-      if (!summaryDate && summaryTodayStrBKK() !== todayStrBKK()) {
-        // ช่วง 00:00–01:59: ดึงข้อมูลของ "เมื่อวาน" จากสถิติย้อนหลัง
-        // (getLatestResults อาจเปลี่ยนไปเป็นวันใหม่แล้ว ทำให้ข้อมูลเมื่อวานหาย)
-        google.script.run.withSuccessHandler(res => {
-          historyCache = res;
-          buildSummaryLateNight(res);
-        }).get7DaysHistory();
-      } else if (!summaryDate) {
+      if (!summaryDate) {
         google.script.run.withSuccessHandler(buildSummary).getLatestResults();
         preloadHistoryForCalendar();
       } else if (historyCache && historyCache.dataByDate) {
@@ -1094,7 +983,7 @@
 
     // ตั้งช่วงวันที่ที่เลือกได้ตอนผู้ใช้แตะช่องเลือกวันที่ (ช่องจริงซ้อนอยู่บนปุ่ม)
     function prepareCalendar(el) {
-      const today = summaryTodayStrBKK();
+      const today = todayStrBKK();
       el.max = isoFromStr(today);
       el.removeAttribute('min');
       if (historyCache && historyCache.dates && historyCache.dates.length && historyCache.dates.every(d => DATE_RE.test(d))) {
@@ -1106,7 +995,7 @@
     function onSummaryDatePicked(v) {
       if (!v) return;
       const s = strFromIso(v);
-      summaryDate = (s === summaryTodayStrBKK()) ? null : s;
+      summaryDate = (s === todayStrBKK()) ? null : s;
       showSummary();
     }
 
@@ -1131,27 +1020,6 @@
       renderSummary(data, null);
     }
 
-    // รายการที่หน้า "ล่าสุด" ไม่ได้แสดง (ตรงกับ excludeList ใน Code.gs) — ตัดออกให้ตัวเลขตรงกัน
-    const SUMMARY_EXCLUDE = new Set(['หุ้นดาวน์โจนส์', 'ดาวน์โจนส์ MIDNIGHT', 'ดาวน์โจนส์ EXTRA', 'ดาวน์โจนส์ TV']);
-
-    function buildSummaryLateNight(res) {
-      setRefreshLoading(false);
-      document.getElementById('data-loading').style.display = 'none';
-      if (currentView !== 'summary') return;
-      const container = document.getElementById('table-container');
-      const day = summaryTodayStrBKK();
-      const src = res && res.dataByDate ? res.dataByDate[day] : null;
-      if (!src || Object.keys(src).length === 0) {
-        container.innerHTML = `<p style="color:red; font-size:0.85em;">ไม่พบข้อมูลของวันที่ ${day}</p>`;
-        return;
-      }
-      const data = {};
-      Object.keys(src).forEach(cat => {
-        data[cat] = (src[cat] || []).filter(r => !SUMMARY_EXCLUDE.has(String(r.name).trim()));
-      });
-      renderSummary(data, null);
-    }
-
     function buildSummary(data) {
       setRefreshLoading(false);
       document.getElementById('data-loading').style.display = 'none';
@@ -1163,11 +1031,10 @@
         return;
       }
 
-      renderSummary(data, summaryTodayStrBKK());
+      renderSummary(data, todayStrBKK());
     }
 
     // filterDate = วันที่ที่ใช้กรองแถว (หน้าวันนี้) / null = ข้อมูลของวันนั้นอยู่แล้ว (ย้อนหลัง)
-    const openSections = new Set();   // กลุ่มที่ขยายอยู่ (จำไว้ตอนรีเฟรช)
     function renderSummary(data, filterDate) {
       const container = document.getElementById('table-container');
       const counts = SUMMARY_GROUPS.map(() => 0);
@@ -1180,60 +1047,19 @@
           if (val === '' || val === '-') return;
           if (filterDate && String(row.date).trim() !== filterDate) return;
           outCount++;
-          SUMMARY_GROUPS.forEach((g, i) => { if (groupMatch(g, val)) { counts[i]++; matches[i].push({ num: g.last2 ? val.slice(-2) : val, name: String(row.name || cat).trim() }); } });
+          SUMMARY_GROUPS.forEach((g, i) => { if (g.keys.has(sortKey(val))) { counts[i]++; matches[i].push({ num: val, name: String(row.name || cat).trim() }); } });
         });
       });
 
       let rows = '';
-      let lastSec = null;
       SUMMARY_GROUPS.forEach((g, i) => {
         const has = counts[i] > 0;
-        const sec = g.section || null;
-        // หัวกลุ่ม (กดเพื่อขยาย/ย่อ)
-        if (sec && sec !== lastSec) {
-          const open = openSections.has(sec);
-          const items = SUMMARY_GROUPS.map((x, j) => x.section === sec ? j : -1).filter(j => j >= 0);
-          const hit = items.filter(j => counts[j] > 0).length;
-          rows += `<tr class="sum-sec${open ? ' open' : ''}" data-sec="${sec}"><td><span class="sum-icon sec-arrow">${open ? '▼' : '▶'}</span>${sec}</td><td><span class="sec-info">${hit}/${items.length}</span></td></tr>`;
-        }
-        lastSec = sec;
-        const hidden = sec && !openSections.has(sec) ? ' style="display:none"' : '';
-        rows += `<tr class="sum-row${has ? ' has-match' : ''}${sec ? ' in-sec' : ''}" data-idx="${i}"${sec ? ` data-sec="${sec}"` : ''}${hidden}><td><span class="sum-icon"><span class="sum-dot" style="background:${g.color}"></span></span>${g.label}</td><td><span class="sum-count">${counts[i]}</span></td></tr>`;
+        rows += `<tr class="sum-row${has ? ' has-match' : ''}" data-idx="${i}"><td><span class="sum-icon">${g.icon}</span>${g.label}</td><td><span class="sum-count">${counts[i]}</span></td></tr>`;
       });
-
-      // จอคอม: ไม่จัดกลุ่ม แยก DB และ 2 บน เป็นตารางเรียงด้านขวา
-      const plainRow = i => `<tr class="sum-row${counts[i] > 0 ? ' has-match' : ''}" data-idx="${i}"><td><span class="sum-icon"><span class="sum-dot" style="background:${SUMMARY_GROUPS[i].color}"></span></span>${SUMMARY_GROUPS[i].label}</td><td><span class="sum-count">${counts[i]}</span></td></tr>`;
-      const deskTable = (title, cls, idxs) =>
-        `<div class="table-wrapper ${cls}"><table class="sum-table"><thead><tr><th>${title}</th><th>รวม</th></tr></thead><tbody>${idxs.map(plainRow).join('')}</tbody></table></div>`;
-      const idxOf = sec => SUMMARY_GROUPS.map((g, i) => (g.section || null) === sec ? i : -1).filter(i => i >= 0);
 
       container.innerHTML =
-        `<div class="sum-mobile"><div class="table-wrapper"><table class="sum-table"><thead><tr><th>รายการ</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table></div></div>` +
-        `<div class="sum-desktop">${deskTable('รายการ', 'sum-main', idxOf(null))}${deskTable('DB', 'sum-side', idxOf('DB'))}${deskTable('2 บน', 'sum-side', idxOf('2 บน'))}</div>`;
-
-      // จำนวนผลที่ออก แสดงบรรทัดเดียวกับหัวข้อ "สรุป"
-      document.getElementById('result-count').innerHTML = summaryDate
-        ? `${outCount} รายการ <button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>`
-        : `ผลที่ออกแล้ว ${outCount} รายการ`;
-
-      // กดหัวกลุ่ม -> ขยาย/ย่อรายการในกลุ่ม
-      container.querySelectorAll('tr.sum-sec').forEach(h => {
-        h.addEventListener('click', () => {
-          const sec = h.dataset.sec;
-          const open = !openSections.has(sec);
-          if (open) openSections.add(sec); else openSections.delete(sec);
-          h.classList.toggle('open', open);
-          h.querySelector('.sec-arrow').textContent = open ? '▼' : '▶';
-          container.querySelectorAll(`tr.sum-row[data-sec="${sec}"]`).forEach(r => {
-            r.style.display = open ? '' : 'none';
-            if (!open) {
-              const nx = r.nextElementSibling;
-              if (nx && nx.classList.contains('sum-detail')) nx.remove();
-              r.classList.remove('open');
-            }
-          });
-        });
-      });
+        `<div class="sum-note">${summaryDate ? `ผลวันที่ ${summaryDate} ทั้งหมด ${outCount} รายการ<button class="sum-today-btn" onclick="resetSummaryToday()">กลับวันนี้</button>` : `ผลที่ออกแล้ว ${outCount} รายการ`}</div>` +
+        `<div class="table-wrapper"><table class="sum-table"><thead><tr><th>รายการ</th><th>รวม</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 
       // กดที่แถวที่มีเลขตรง -> แสดง/ซ่อนรายการเลขที่ออก
       container.querySelectorAll('tr.sum-row.has-match').forEach(tr => {
@@ -1380,8 +1206,7 @@
                        </div>`;
       }
 
-      container.innerHTML = tabsHtml + summaryHtml + `<div class="tables-grid">${htmlTables}</div>`;
-      setDupCount(dailyDuplicateCount);
+      container.innerHTML = tabsHtml + summaryHtml + htmlTables;
     }
 
     function switchHistoryDate(dStr) {
